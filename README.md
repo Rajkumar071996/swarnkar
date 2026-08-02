@@ -77,6 +77,13 @@ npm run build          # or `npm run dev` while working on the UI
 php artisan serve
 ```
 
+`public/build/` is committed on purpose. Shared hosts such as Hostinger usually cannot
+run Node, so the compiled CSS/JS has to travel with the deploy. After any SCSS or JS
+change, run `npm run build` locally before uploading, and make sure `public/build/`
+(including `manifest.json` and `assets/`) lands under the app's `public/` folder on
+the server — for this project that is
+`.../public_html/gold/public/build/`.
+
 Open http://127.0.0.1:8000 and sign in:
 
 | Email | Password | Role | Store |
