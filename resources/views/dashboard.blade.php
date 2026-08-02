@@ -1,0 +1,130 @@
+@extends('layouts.app')
+
+@section('title', 'Dashboard')
+@section('heading', 'Good ' . (now()->hour < 12 ? 'morning' : (now()->hour < 17 ? 'afternoon' : 'evening')) . ', ' . Str::before(auth()->user()->name, ' '))
+@section('subheading', auth()->user()->store->name . ' · ' . now()->format('l, d F Y'))
+
+@section('actions')
+    <a href="{{ route('lookup.index') }}" class="btn btn-primary">
+        <i class="bi bi-shield-check me-1"></i>Check a GoldScore
+    </a>
+@endsection
+
+@section('content')
+    <div class="row g-3 mb-4">
+        @foreach ([
+            ['label' => 'Khata outstanding', 'value' => money($stats['outstanding']), 'icon' => 'journal-bookmark', 'tone' => ''],
+            ['label' => 'Past due date', 'value' => money($stats['overdue']), 'icon' => 'exclamation-triangle', 'tone' => 'text-danger'],
+            ['label' => 'Due this week', 'value' => money($stats['due_this_week']), 'icon' => 'calendar-check', 'tone' => ''],
+            ['label' => 'Open khatas', 'value' => $stats['open_khatas'], 'icon' => 'person-lines-fill', 'tone' => ''],
+            ['label' => 'Customers', 'value' => $stats['customers'], 'icon' => 'people', 'tone' => ''],
+        ] as $card)
+            <div class="col-6 col-xl">
+                <div class="card gs-stat-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="text-muted text-uppercase small">{{ $card['label'] }}</div>
+                            <i class="bi bi-{{ $card['icon'] }} text-muted"></i>
+                        </div>
+                        <div class="h4 mb-0 mt-2 {{ $card['tone'] }}">{{ $card['value'] }}</div>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-7">
+            <div class="card gs-stat-card mb-3">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <span class="fw-semibold">Falling due this week</span>
+                    <a href="{{ route('khata.index') }}" class="small">Open khata</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead class="table-light">
+                        <tr><th>Customer</th><th>Item</th><th>Due</th><th class="text-end">Outstanding</th><th></th></tr>
+                        </thead>
+                        <tbody>
+                        @forelse ($dueSoon as $udhaar)
+                            <tr>
+                                <td class="fw-semibold">
+                                    <a href="{{ route('khata.show', $udhaar->customer) }}">
+                                        {{ $udhaar->customer->full_name }}
+                                    </a>
+                                </td>
+                                <td class="small">{{ Str::limit($udhaar->item_description, 24) }}</td>
+                                <td>{{ $udhaar->due_on->format('d M') }}</td>
+                                <td class="text-end">{{ money($udhaar->outstandingAmount()) }}</td>
+                                <td class="text-end">
+                                    <a href="{{ route('udhaars.show', $udhaar) }}"
+                                       class="btn btn-sm btn-outline-primary">Collect</a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="5" class="text-center text-muted py-4">Nothing due in the next seven days.</td></tr>
+                        @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card gs-stat-card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <span class="fw-semibold">Overdue store credit</span>
+                    <a href="{{ route('udhaars.index', ['filter' => 'overdue']) }}" class="small">View all</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead class="table-light">
+                        <tr><th>Customer</th><th>Item</th><th>Late by</th><th class="text-end">Outstanding</th></tr>
+                        </thead>
+                        <tbody>
+                        @forelse ($overdueUdhaars as $udhaar)
+                            <tr>
+                                <td class="fw-semibold">
+                                    <a href="{{ route('khata.show', $udhaar->customer) }}">{{ $udhaar->customer->full_name }}</a>
+                                </td>
+                                <td class="small">{{ Str::limit($udhaar->item_description, 28) }}</td>
+                                <td class="text-danger">{{ $udhaar->daysOverdue() }} days</td>
+                                <td class="text-end">{{ money($udhaar->outstandingAmount()) }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="4" class="text-center text-muted py-4">Nothing overdue. </td></tr>
+                        @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card gs-stat-card">
+                <div class="card-header bg-white fw-semibold">Risk mix of your customer book</div>
+                <div class="card-body">
+                    @php $totalCustomers = max(1, array_sum($riskMix)); @endphp
+
+                    @foreach (App\Enums\RiskBand::cases() as $band)
+                        @php $count = $riskMix[$band->value]; @endphp
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>
+                                <span class="badge {{ $band->badgeClass() }} me-1">&nbsp;</span>
+                                {{ $band->label() }}
+                            </span>
+                            <span class="text-muted">{{ $count }}</span>
+                        </div>
+                        <div class="progress mb-3" style="height: 6px;">
+                            <div class="progress-bar {{ str_replace('bg-', 'bg-', $band->badgeClass()) }}"
+                                 style="width: {{ ($count / $totalCustomers) * 100 }}%"></div>
+                        </div>
+                    @endforeach
+
+                    <p class="text-muted small mb-0">
+                        Scores refresh automatically whenever you extend credit, record a payment
+                        or write off an account.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection

@@ -1,0 +1,82 @@
+// Gold-leaning palette so the risk bands stay the loudest colour on the page.
+$primary: #b8860b;
+$secondary: #6c757d;
+$success: #1a7f37;
+$warning: #c47f00;
+$danger: #b42318;
+$body-bg: #f6f4ef;
+$font-family-sans-serif: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+@import 'bootstrap/scss/bootstrap';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+.gs-sidebar {
+    min-height: 100vh;
+    background: #1f1a12;
+}
+
+.gs-sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.72);
+    border-radius: 0.5rem;
+    padding: 0.55rem 0.85rem;
+    margin-bottom: 0.15rem;
+}
+
+.gs-sidebar .nav-link:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.gs-sidebar .nav-link.active {
+    color: #fff;
+    background: $primary;
+}
+
+.gs-stat-card {
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 0.75rem;
+    background: #fff;
+}
+
+// Score dial: a conic gradient sweeps from 300 to 900 via the --gs-sweep variable.
+.gs-score-dial {
+    --gs-sweep: 0deg;
+    width: 190px;
+    height: 190px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: conic-gradient(var(--gs-band-color, #{$primary}) var(--gs-sweep), #e6e1d6 0);
+}
+
+.gs-score-dial-inner {
+    width: 152px;
+    height: 152px;
+    border-radius: 50%;
+    background: #fff;
+    display: grid;
+    place-items: center;
+    text-align: center;
+}
+
+.gs-score-value {
+    font-size: 2.75rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.gs-band-green {
+    --gs-band-color: #{$success};
+}
+
+.gs-band-yellow {
+    --gs-band-color: #{$warning};
+}
+
+.gs-band-red {
+    --gs-band-color: #{$danger};
+}
+
+.gs-band-unscored {
+    --gs-band-color: #{$secondary};
+}
