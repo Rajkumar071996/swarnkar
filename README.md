@@ -17,13 +17,19 @@ that computes from that ledger rather than from stored numbers.
 
 | Requirement | Version used here | Notes |
 | --- | --- | --- |
-| PHP | 8.4 (Homebrew) | Laravel 13 needs 8.3+. XAMPP's bundled PHP 8.2 will not run this app. |
+| PHP | 8.3 minimum, 8.4 in development | XAMPP's bundled PHP 8.2 will not run this app. |
 | MariaDB / MySQL | MariaDB 10.4 (XAMPP) | Reached over TCP on `127.0.0.1:3306`. |
 | Node | 20+ | Only for building the Bootstrap 5 assets. |
 | Composer | 2.x | |
 
 Because XAMPP's PHP is too old, the app is served with `php artisan serve` on Homebrew PHP
 rather than through XAMPP Apache. XAMPP is still used for the database.
+
+**PHP 8.3 is the supported floor, and `composer.json` pins `config.platform.php` to `8.3.0`
+to keep it that way.** Without that pin, running `composer update` on a 8.4 machine resolves
+Symfony 8.1, which requires PHP 8.4.1 and makes `composer install` fail on every 8.3 server.
+Laravel 13 accepts Symfony `^7.4 || ^8.0`, so the pin simply holds the dependency tree at the
+7.4 line that still runs on 8.3. Raise the pin only when every target server is on 8.4.
 
 ## Getting started
 
