@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
+use App\Models\User;
+use App\Support\MobileNumber;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -19,25 +22,32 @@ class LoginController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string'],
+        $request->merge([
+            'phone' => MobileNumber::normalize($request->input('phone')),
         ]);
 
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+        $credentials = $request->validate([
+            'phone' => MobileNumber::rules(),
+            'password' => ['required', 'string'],
+        ], [
+            'phone.regex' => 'Enter a valid 10-digit Indian mobile number.',
+        ]);
+
+        $user = User::where('phone', $credentials['phone'])->first();
+
+        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             throw ValidationException::withMessages([
-                'email' => 'Those credentials do not match our records.',
+                'phone' => 'Those credentials do not match our records.',
             ]);
         }
 
-        if (! Auth::user()->is_active) {
-            Auth::logout();
-
+        if (! $user->is_active) {
             throw ValidationException::withMessages([
-                'email' => 'This account has been deactivated. Contact the store owner.',
+                'phone' => 'This account has been deactivated. Contact the store owner.',
             ]);
         }
 
+        Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
         AuditLog::record('auth.login');
 

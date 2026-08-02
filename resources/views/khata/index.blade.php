@@ -5,6 +5,9 @@
 @section('subheading', 'Every customer credit account at your shop, with what is still owed.')
 
 @section('actions')
+    <a href="{{ route('khata.receive') }}" class="btn btn-success">
+        <i class="bi bi-cash-coin me-1"></i>Received entry
+    </a>
     @can('create', App\Models\Udhaar::class)
         <a href="{{ route('udhaars.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-lg me-1"></i>Give credit

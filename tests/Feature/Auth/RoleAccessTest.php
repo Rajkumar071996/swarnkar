@@ -43,9 +43,9 @@ class RoleAccessTest extends TestCase
         $this->staff->update(['is_active' => false]);
 
         $this->post(route('login.store'), [
-            'email' => $this->staff->email,
+            'phone' => $this->staff->phone,
             'password' => 'password',
-        ])->assertSessionHasErrors('email');
+        ])->assertSessionHasErrors('phone');
 
         $this->assertGuest();
     }

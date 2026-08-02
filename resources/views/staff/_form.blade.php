@@ -9,17 +9,19 @@
     </div>
 
     <div class="col-md-6">
-        <label for="email" class="form-label">Email</label>
-        <input type="email" id="email" name="email" value="{{ old('email', $staff->email ?? '') }}"
-               class="form-control @error('email') is-invalid @enderror" required>
-        @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        <label for="phone" class="form-label">Mobile number</label>
+        <input type="tel" id="phone" name="phone" value="{{ old('phone', $staff->phone ?? '') }}"
+               class="form-control @error('phone') is-invalid @enderror"
+               inputmode="numeric" placeholder="10-digit mobile" required>
+        @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        <div class="form-text">Used to sign in to GoldScore.</div>
     </div>
 
     <div class="col-md-6">
-        <label for="phone" class="form-label">Phone</label>
-        <input type="text" id="phone" name="phone" value="{{ old('phone', $staff->phone ?? '') }}"
-               class="form-control @error('phone') is-invalid @enderror">
-        @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        <label for="email" class="form-label">Email <span class="text-muted">(optional)</span></label>
+        <input type="email" id="email" name="email" value="{{ old('email', $staff->email ?? '') }}"
+               class="form-control @error('email') is-invalid @enderror">
+        @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
 
     <div class="col-md-6">

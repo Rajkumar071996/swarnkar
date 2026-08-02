@@ -38,14 +38,14 @@ class ApiContractTest extends TestCase
     public function signing_in_returns_a_bearer_token_and_the_users_store(): void
     {
         $response = $this->postJson(route('api.auth.login'), [
-            'email' => $this->owner->email,
+            'phone' => $this->owner->phone,
             'password' => 'password',
             'device_name' => 'Pixel 8',
         ]);
 
         $response->assertOk()->assertJsonStructure([
             'token',
-            'user' => ['id', 'name', 'email', 'role', 'store' => ['id', 'name']],
+            'user' => ['id', 'name', 'phone', 'role', 'store' => ['id', 'name']],
         ]);
 
         $this->assertNotEmpty($response->json('token'));
@@ -55,7 +55,7 @@ class ApiContractTest extends TestCase
     public function bad_credentials_do_not_hand_out_a_token(): void
     {
         $this->postJson(route('api.auth.login'), [
-            'email' => $this->owner->email,
+            'phone' => $this->owner->phone,
             'password' => 'wrong-password',
             'device_name' => 'Pixel 8',
         ])->assertStatus(422);
@@ -67,7 +67,7 @@ class ApiContractTest extends TestCase
         $this->owner->update(['is_active' => false]);
 
         $this->postJson(route('api.auth.login'), [
-            'email' => $this->owner->email,
+            'phone' => $this->owner->phone,
             'password' => 'password',
             'device_name' => 'Pixel 8',
         ])->assertStatus(422);
@@ -322,7 +322,7 @@ class ApiContractTest extends TestCase
     public function logging_out_revokes_the_token_that_made_the_call(): void
     {
         $token = $this->postJson(route('api.auth.login'), [
-            'email' => $this->owner->email,
+            'phone' => $this->owner->phone,
             'password' => 'password',
             'device_name' => 'Pixel 8',
         ])->json('token');

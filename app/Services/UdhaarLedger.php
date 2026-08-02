@@ -5,10 +5,12 @@ namespace App\Services;
 use App\Enums\UdhaarStatus;
 use App\Events\CustomerLedgerChanged;
 use App\Models\AuditLog;
+use App\Models\Customer;
 use App\Models\Udhaar;
 use App\Models\UdhaarPayment;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -66,6 +68,90 @@ class UdhaarLedger
             CustomerLedgerChanged::dispatch($udhaar->customer, 'udhaar.payment');
 
             return $payment;
+        });
+    }
+
+    /**
+     * Records money received against a customer's khata. The jeweller can aim
+     * it at one bill, or leave the target blank and the receipt is applied to
+     * the oldest outstanding entries first — the way a running khata is kept.
+     *
+     * @return Collection<int, UdhaarPayment>
+     */
+    public function receive(
+        Customer $customer,
+        float $amount,
+        Carbon $paidOn,
+        string $method,
+        ?string $reference,
+        User $user,
+        ?int $udhaarId = null,
+    ): Collection {
+        if ($amount <= 0) {
+            throw ValidationException::withMessages([
+                'amount' => 'Enter how much was received.',
+            ]);
+        }
+
+        $open = Udhaar::query()
+            ->where('customer_id', $customer->id)
+            ->where('store_id', $user->store_id)
+            ->outstanding()
+            ->orderBy('due_on')
+            ->orderBy('id')
+            ->get();
+
+        if ($udhaarId !== null) {
+            $open = $open->where('id', $udhaarId)->values();
+
+            if ($open->isEmpty()) {
+                throw ValidationException::withMessages([
+                    'udhaar_id' => 'That credit entry is not open on this khata.',
+                ]);
+            }
+        }
+
+        $available = round($open->sum(fn (Udhaar $u) => $u->outstandingAmount()), 2);
+
+        if ($available <= 0) {
+            throw ValidationException::withMessages([
+                'amount' => 'This customer has nothing outstanding at your store.',
+            ]);
+        }
+
+        if ($amount > $available + 0.009) {
+            throw ValidationException::withMessages([
+                'amount' => 'That is more than the '.money($available).' still outstanding on this khata.',
+            ]);
+        }
+
+        return DB::transaction(function () use ($open, $amount, $paidOn, $method, $reference, $user, $customer) {
+            $remaining = $amount;
+            $payments = collect();
+
+            foreach ($open as $udhaar) {
+                if ($remaining <= 0.009) {
+                    break;
+                }
+
+                $slice = min($remaining, $udhaar->outstandingAmount());
+                $payments->push($this->recordPayment(
+                    $udhaar->fresh(),
+                    $slice,
+                    $paidOn,
+                    $method,
+                    $reference,
+                    $user,
+                ));
+                $remaining = round($remaining - $slice, 2);
+            }
+
+            AuditLog::record('khata.receipt_recorded', $customer, [
+                'amount' => $amount,
+                'payments' => $payments->count(),
+            ]);
+
+            return $payments;
         });
     }
 

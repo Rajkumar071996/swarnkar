@@ -7,10 +7,12 @@
         @csrf
 
         <div class="mb-3">
-            <label for="email" class="form-label">Email address</label>
-            <input type="email" id="email" name="email" value="{{ old('email') }}"
-                   class="form-control @error('email') is-invalid @enderror" required autofocus>
-            @error('email')
+            <label for="phone" class="form-label">Mobile number</label>
+            <input type="tel" id="phone" name="phone" value="{{ old('phone') }}"
+                   class="form-control @error('phone') is-invalid @enderror"
+                   inputmode="numeric" autocomplete="username"
+                   placeholder="10-digit mobile" required autofocus>
+            @error('phone')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
@@ -18,7 +20,8 @@
         <div class="mb-3">
             <label for="password" class="form-label">Password</label>
             <input type="password" id="password" name="password"
-                   class="form-control @error('password') is-invalid @enderror" required>
+                   class="form-control @error('password') is-invalid @enderror"
+                   autocomplete="current-password" required>
             @error('password')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -31,4 +34,9 @@
 
         <button type="submit" class="btn btn-primary w-100">Sign in</button>
     </form>
+
+    <p class="text-center text-muted small mt-3 mb-0">
+        New to GoldScore?
+        <a href="{{ route('register') }}">Create a store account</a>
+    </p>
 @endsection

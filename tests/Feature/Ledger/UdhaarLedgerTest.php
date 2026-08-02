@@ -72,6 +72,48 @@ class UdhaarLedgerTest extends TestCase
     }
 
     #[Test]
+    public function a_received_entry_can_clear_the_oldest_bills_first(): void
+    {
+        $older = $this->issue(20000, Carbon::today()->subMonths(2));
+        $newer = $this->issue(30000, Carbon::today()->subMonth());
+
+        $payments = $this->ledger->receive(
+            $this->customer,
+            25000,
+            Carbon::today(),
+            'cash',
+            null,
+            $this->user,
+        );
+
+        $this->assertCount(2, $payments);
+        $this->assertSame(0.0, $older->fresh()->outstandingAmount());
+        $this->assertSame(UdhaarStatus::Settled, $older->fresh()->status);
+        $this->assertSame(25000.0, $newer->fresh()->outstandingAmount());
+        $this->assertSame(UdhaarStatus::PartiallyPaid, $newer->fresh()->status);
+    }
+
+    #[Test]
+    public function a_received_entry_can_target_one_bill(): void
+    {
+        $untouched = $this->issue(20000, Carbon::today()->subMonths(2));
+        $target = $this->issue(30000, Carbon::today()->subMonth());
+
+        $this->ledger->receive(
+            $this->customer,
+            10000,
+            Carbon::today(),
+            'upi',
+            'UPI123',
+            $this->user,
+            $target->id,
+        );
+
+        $this->assertSame(20000.0, $untouched->fresh()->outstandingAmount());
+        $this->assertSame(20000.0, $target->fresh()->outstandingAmount());
+    }
+
+    #[Test]
     public function a_payment_larger_than_the_balance_is_refused(): void
     {
         $udhaar = $this->issue(50000);

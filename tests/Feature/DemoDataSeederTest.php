@@ -40,8 +40,8 @@ class DemoDataSeederTest extends TestCase
     #[Test]
     public function the_demo_sign_in_accounts_work(): void
     {
-        foreach (['owner@swarnkar.test', 'staff@swarnkar.test', 'karigar@swarnkar.test'] as $email) {
-            $this->post(route('login.store'), ['email' => $email, 'password' => 'password'])
+        foreach (['9829011223', '9829044556', '9829077889'] as $phone) {
+            $this->post(route('login.store'), ['phone' => $phone, 'password' => 'password'])
                 ->assertRedirect(route('dashboard'));
 
             $this->post(route('logout'));

@@ -86,15 +86,16 @@ the server — for this project that is
 
 Open http://127.0.0.1:8000 and sign in:
 
-| Email | Password | Role | Store |
+| Mobile | Password | Role | Store |
 | --- | --- | --- | --- |
-| `owner@swarnkar.test` | `password` | Owner, full access | Swarnkar Jewellers |
-| `staff@swarnkar.test` | `password` | Staff: read scores, take payments | Swarnkar Jewellers |
-| `karigar@swarnkar.test` | `password` | Goldsmith Manager, same rights as staff | Swarnkar Jewellers |
-| `owner@mahalaxmi.test` | `password` | Owner of a second store | Mahalaxmi Jewellers |
+| `9829011223` | `password` | Owner, full access | Swarnkar Jewellers |
+| `9829044556` | `password` | Staff: read scores, take payments | Swarnkar Jewellers |
+| `9829077889` | `password` | Goldsmith Manager, same rights as staff | Swarnkar Jewellers |
+| `9829099887` | `password` | Owner of a second store | Mahalaxmi Jewellers |
 
-Sign in as the second store's owner to see tenancy working: the same customers appear, but
-none of Swarnkar's ledger does.
+Sign in with the mobile number — email is optional and not used for login. Sign in as the
+second store's owner to see tenancy working: the same customers appear, but none of
+Swarnkar's ledger does.
 
 The OTP at the consent step is always `9999` while the static driver is enabled.
 
@@ -215,7 +216,7 @@ POST      /api/v1/udhaars/{udhaar}/payments
 ```bash
 TOKEN=$(curl -s -X POST http://127.0.0.1:8000/api/v1/auth/login \
   -H 'Accept: application/json' \
-  -d 'email=owner@swarnkar.test&password=password&device_name=cli' | jq -r .token)
+  -d 'phone=9829011223&password=password&device_name=cli' | jq -r .token)
 
 curl -s -X POST http://127.0.0.1:8000/api/v1/lookup/search \
   -H "Authorization: Bearer $TOKEN" -H 'Accept: application/json' \

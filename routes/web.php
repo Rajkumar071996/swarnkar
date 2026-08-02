@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DefaultFlagController;
@@ -15,6 +16,11 @@ Route::middleware('guest')->group(function () {
     Route::post('login', [LoginController::class, 'store'])
         ->middleware('throttle:10,1')
         ->name('login.store');
+
+    Route::get('register', [RegisterController::class, 'show'])->name('register');
+    Route::post('register', [RegisterController::class, 'store'])
+        ->middleware('throttle:5,1')
+        ->name('register.store');
 });
 
 Route::middleware(['auth', 'active'])->group(function () {
@@ -37,6 +43,9 @@ Route::middleware(['auth', 'active'])->group(function () {
 
     // Udhar khata: the account view, one row per customer.
     Route::get('khata', [KhataController::class, 'index'])->name('khata.index');
+    Route::get('khata/receive', [KhataController::class, 'receiveForm'])->name('khata.receive');
+    Route::get('khata/{customer}/receive', [KhataController::class, 'receiveForm'])->name('khata.receive.customer');
+    Route::post('khata/{customer}/receive', [KhataController::class, 'receive'])->name('khata.receive.store');
     Route::get('khata/{customer}', [KhataController::class, 'show'])->name('khata.show');
 
     // The individual credit entries that make up those accounts.

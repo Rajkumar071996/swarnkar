@@ -33,8 +33,13 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('khata.index') }}" class="nav-link @active('khata.*')">
+                    <a href="{{ route('khata.index') }}" class="nav-link @active('khata.index', 'khata.show')">
                         <i class="bi bi-journal-bookmark me-2"></i>Udhar Khata
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('khata.receive') }}" class="nav-link @active('khata.receive', 'khata.receive.customer')">
+                        <i class="bi bi-cash-coin me-2"></i>Received Entry
                     </a>
                 </li>
                 <li class="nav-item">

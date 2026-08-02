@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\User;
+use App\Support\MobileNumber;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -14,23 +15,29 @@ class AuthController extends Controller
 {
     public function login(Request $request): JsonResponse
     {
-        $data = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string'],
-            'device_name' => ['required', 'string', 'max:100'],
+        $request->merge([
+            'phone' => MobileNumber::normalize($request->input('phone')),
         ]);
 
-        $user = User::where('email', $data['email'])->first();
+        $data = $request->validate([
+            'phone' => MobileNumber::rules(),
+            'password' => ['required', 'string'],
+            'device_name' => ['required', 'string', 'max:100'],
+        ], [
+            'phone.regex' => 'Enter a valid 10-digit Indian mobile number.',
+        ]);
+
+        $user = User::where('phone', $data['phone'])->first();
 
         if (! $user || ! Hash::check($data['password'], $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['Those credentials do not match our records.'],
+                'phone' => ['Those credentials do not match our records.'],
             ]);
         }
 
         if (! $user->is_active) {
             throw ValidationException::withMessages([
-                'email' => ['This account has been deactivated.'],
+                'phone' => ['This account has been deactivated.'],
             ]);
         }
 
@@ -64,6 +71,7 @@ class AuthController extends Controller
         return [
             'id' => $user->id,
             'name' => $user->name,
+            'phone' => $user->phone,
             'email' => $user->email,
             'role' => $user->role->value,
             'role_label' => $user->role->label(),

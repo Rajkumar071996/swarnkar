@@ -8,6 +8,11 @@
     <a href="{{ route('lookup.report', $customer) }}" class="btn btn-outline-primary">
         <i class="bi bi-shield-check me-1"></i>Check GoldScore
     </a>
+    @if ($summary['outstanding'] > 0)
+        <a href="{{ route('khata.receive.customer', $customer) }}" class="btn btn-success">
+            <i class="bi bi-cash-coin me-1"></i>Received entry
+        </a>
+    @endif
     @can('create', App\Models\Udhaar::class)
         <a href="{{ route('udhaars.create', ['customer' => $customer->id]) }}" class="btn btn-primary">
             <i class="bi bi-plus-lg me-1"></i>Give credit

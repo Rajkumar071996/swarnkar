@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\UserRole;
 use App\Models\AuditLog;
 use App\Models\User;
+use App\Support\MobileNumber;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -35,12 +36,20 @@ class StaffController extends Controller
     {
         $this->authorize('create', User::class);
 
+        $request->merge([
+            'phone' => MobileNumber::normalize($request->input('phone')),
+            'email' => filled($request->input('email')) ? $request->input('email') : null,
+        ]);
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email', 'max:191', 'unique:users,email'],
-            'phone' => ['nullable', 'string', 'max:20'],
+            'phone' => MobileNumber::rules(unique: true),
+            'email' => ['nullable', 'email', 'max:191', 'unique:users,email'],
             'role' => ['required', Rule::enum(UserRole::class)],
             'password' => ['required', 'confirmed', Password::min(8)],
+        ], [
+            'phone.regex' => 'Enter a valid 10-digit Indian mobile number.',
+            'phone.unique' => 'This mobile number already belongs to another account.',
         ]);
 
         $user = User::create([...$data, 'store_id' => $request->user()->store_id]);
@@ -60,13 +69,21 @@ class StaffController extends Controller
     {
         $this->authorize('update', $staff);
 
+        $request->merge([
+            'phone' => MobileNumber::normalize($request->input('phone')),
+            'email' => filled($request->input('email')) ? $request->input('email') : null,
+        ]);
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email', 'max:191', Rule::unique('users', 'email')->ignore($staff->id)],
-            'phone' => ['nullable', 'string', 'max:20'],
+            'phone' => MobileNumber::rules(unique: true, ignoreUserId: $staff->id),
+            'email' => ['nullable', 'email', 'max:191', Rule::unique('users', 'email')->ignore($staff->id)],
             'role' => ['required', Rule::enum(UserRole::class)],
             'is_active' => ['nullable', 'boolean'],
             'password' => ['nullable', 'confirmed', Password::min(8)],
+        ], [
+            'phone.regex' => 'Enter a valid 10-digit Indian mobile number.',
+            'phone.unique' => 'This mobile number already belongs to another account.',
         ]);
 
         if (blank($data['password'] ?? null)) {

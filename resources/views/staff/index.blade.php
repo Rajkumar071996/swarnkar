@@ -17,8 +17,8 @@
                 <thead class="table-light">
                 <tr>
                     <th>Name</th>
+                    <th>Mobile</th>
                     <th>Email</th>
-                    <th>Phone</th>
                     <th>Role</th>
                     <th>Status</th>
                     <th class="text-end">Actions</th>
@@ -28,8 +28,8 @@
                 @forelse ($staff as $member)
                     <tr>
                         <td class="fw-semibold">{{ $member->name }}</td>
-                        <td>{{ $member->email }}</td>
-                        <td>{{ $member->phone ?: '--' }}</td>
+                        <td class="font-monospace">{{ $member->phone }}</td>
+                        <td>{{ $member->email ?: '--' }}</td>
                         <td>{{ $member->role->label() }}</td>
                         <td>
                             <span class="badge {{ $member->is_active ? 'bg-success' : 'bg-secondary' }}">

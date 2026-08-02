@@ -7,8 +7,11 @@ use App\Models\Udhaar;
 use App\Models\UdhaarPayment;
 use App\Services\ConsentService;
 use App\Services\CreditExposure;
+use App\Services\UdhaarLedger;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -22,6 +25,7 @@ class KhataController extends Controller
     public function __construct(
         private readonly CreditExposure $exposure,
         private readonly ConsentService $consent,
+        private readonly UdhaarLedger $ledger,
     ) {}
 
     public function index(Request $request): View
@@ -95,6 +99,75 @@ class KhataController extends Controller
             'exposure' => $grant ? $this->exposure->for($customer, $storeId) : null,
             'isLinked' => $customer->stores()->whereKey($storeId)->exists(),
         ]);
+    }
+
+    public function receiveForm(Request $request, ?Customer $customer = null): View
+    {
+        $this->authorize('viewAny', Udhaar::class);
+
+        $storeId = $request->user()->store_id;
+        $selected = $customer
+            ?? ($request->integer('customer')
+                ? Customer::query()->find($request->integer('customer'))
+                : null);
+
+        if ($selected) {
+            $this->authorize('view', $selected);
+        }
+
+        $openEntries = $selected
+            ? Udhaar::query()
+                ->where('customer_id', $selected->id)
+                ->outstanding()
+                ->orderBy('due_on')
+                ->get()
+            : collect();
+
+        return view('khata.receive', [
+            'customer' => $selected,
+            'customers' => Customer::query()
+                ->whereHas('stores', fn (Builder $q) => $q->whereKey($storeId))
+                ->whereHas('udhaars', fn (Builder $q) => $q->outstanding())
+                ->orderBy('full_name')
+                ->get(['id', 'full_name', 'mobile']),
+            'openEntries' => $openEntries,
+            'outstanding' => round($openEntries->sum(fn (Udhaar $u) => $u->outstandingAmount()), 2),
+        ]);
+    }
+
+    public function receive(Request $request, Customer $customer): RedirectResponse
+    {
+        $this->authorize('view', $customer);
+
+        $data = $request->validate([
+            'amount' => ['required', 'numeric', 'min:0.01', 'max:99999999'],
+            'paid_on' => ['required', 'date', 'before_or_equal:today'],
+            'method' => ['required', 'in:cash,upi,card,bank_transfer,cheque'],
+            'reference' => ['nullable', 'string', 'max:128'],
+            'udhaar_id' => [
+                'nullable',
+                'integer',
+                'exists:udhaars,id',
+            ],
+        ]);
+
+        $payments = $this->ledger->receive(
+            $customer,
+            (float) $data['amount'],
+            Carbon::parse($data['paid_on']),
+            $data['method'],
+            $data['reference'] ?? null,
+            $request->user(),
+            isset($data['udhaar_id']) ? (int) $data['udhaar_id'] : null,
+        );
+
+        $message = money($data['amount']).' received'
+            .($payments->count() > 1 ? ' across '.$payments->count().' credit entries' : '')
+            .'.';
+
+        return redirect()
+            ->route('khata.show', $customer)
+            ->with('success', $message);
     }
 
     /**

@@ -104,6 +104,7 @@ class DemoDataSeeder extends Seeder
             'name' => 'Ramesh Verma',
             'email' => 'owner@mahalaxmi.test',
             'role' => UserRole::Owner,
+            'phone' => '9829099887',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
         ]);
