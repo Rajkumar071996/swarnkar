@@ -13,13 +13,14 @@
 @section('content')
     <div class="row g-3 mb-4">
         @foreach ([
-            ['label' => 'Khata outstanding', 'value' => money($stats['outstanding']), 'icon' => 'journal-bookmark', 'tone' => ''],
-            ['label' => 'Past due date', 'value' => money($stats['overdue']), 'icon' => 'exclamation-triangle', 'tone' => 'text-danger'],
-            ['label' => 'Due this week', 'value' => money($stats['due_this_week']), 'icon' => 'calendar-check', 'tone' => ''],
-            ['label' => 'Open khatas', 'value' => $stats['open_khatas'], 'icon' => 'person-lines-fill', 'tone' => ''],
-            ['label' => 'Customers', 'value' => $stats['customers'], 'icon' => 'people', 'tone' => ''],
+            ['label' => 'Khata outstanding', 'value' => money($stats['outstanding']), 'icon' => 'journal-bookmark', 'tone' => '', 'hint' => null],
+            ['label' => 'Past due date', 'value' => money($stats['overdue']), 'icon' => 'exclamation-triangle', 'tone' => 'text-danger', 'hint' => null],
+            ['label' => 'Due this week', 'value' => money($stats['due_this_week']), 'icon' => 'calendar-check', 'tone' => '', 'hint' => null],
+            ['label' => 'Advances held', 'value' => money($stats['advance_held']), 'icon' => 'wallet2', 'tone' => $stats['advance_held'] > 0 ? 'text-success' : '', 'hint' => $stats['advance_customers'].' '.Str::plural('customer', $stats['advance_customers'])],
+            ['label' => 'Open khatas', 'value' => $stats['open_khatas'], 'icon' => 'person-lines-fill', 'tone' => '', 'hint' => null],
+            ['label' => 'Customers', 'value' => $stats['customers'], 'icon' => 'people', 'tone' => '', 'hint' => null],
         ] as $card)
-            <div class="col-6 col-xl">
+            <div class="col-6 col-md-4 col-xl-2">
                 <div class="card gs-stat-card h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start">
@@ -27,6 +28,9 @@
                             <i class="bi bi-{{ $card['icon'] }} text-muted"></i>
                         </div>
                         <div class="h4 mb-0 mt-2 {{ $card['tone'] }}">{{ $card['value'] }}</div>
+                        @if ($card['hint'])
+                            <div class="small text-muted mt-1">{{ $card['hint'] }}</div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -99,6 +103,42 @@
         </div>
 
         <div class="col-lg-5">
+            <div class="card gs-stat-card mb-3">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <span class="fw-semibold">Advances held</span>
+                    <a href="{{ route('khata.receive') }}" class="small">Received entry</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead class="table-light">
+                        <tr><th>Customer</th><th class="text-end">Advance</th><th></th></tr>
+                        </thead>
+                        <tbody>
+                        @forelse ($advanceHeld as $row)
+                            <tr>
+                                <td class="fw-semibold">
+                                    <a href="{{ route('khata.show', $row->customer) }}">
+                                        {{ $row->customer->full_name }}
+                                    </a>
+                                </td>
+                                <td class="text-end text-success">{{ money($row->balance) }}</td>
+                                <td class="text-end">
+                                    <a href="{{ route('udhaars.create', ['customer' => $row->customer_id]) }}"
+                                       class="btn btn-sm btn-outline-primary">Give credit</a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-4">
+                                    No advances held. Money received with nothing outstanding appears here.
+                                </td>
+                            </tr>
+                        @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <div class="card gs-stat-card">
                 <div class="card-header bg-white fw-semibold">Risk mix of your customer book</div>
                 <div class="card-body">

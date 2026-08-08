@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\RiskBand;
 use App\Models\Customer;
+use App\Models\KhataAdvance;
 use App\Models\Udhaar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -32,23 +33,39 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
+        $advanceHeld = KhataAdvance::query()
+            ->where('store_id', $storeId)
+            ->where('balance', '>', 0)
+            ->with('customer')
+            ->orderByDesc('balance')
+            ->limit(10)
+            ->get();
+
         return view('dashboard', [
             'stats' => [
                 'outstanding' => (float) Udhaar::query()->outstanding()
                     ->selectRaw('COALESCE(SUM(principal_amount - amount_paid), 0) AS total')->value('total'),
                 'overdue' => (float) Udhaar::query()->overdue()
                     ->selectRaw('COALESCE(SUM(principal_amount - amount_paid), 0) AS total')->value('total'),
-                'open_khatas' => Udhaar::query()->outstanding()->distinct()->count('customer_id'),
                 'due_this_week' => (float) Udhaar::query()->outstanding()
                     ->whereDate('due_on', '>=', $today)
                     ->whereDate('due_on', '<=', $today->copy()->addDays(7))
                     ->selectRaw('COALESCE(SUM(principal_amount - amount_paid), 0) AS total')->value('total'),
+                'open_khatas' => Udhaar::query()->outstanding()->distinct()->count('customer_id'),
+                'advance_held' => (float) KhataAdvance::query()
+                    ->where('store_id', $storeId)
+                    ->sum('balance'),
+                'advance_customers' => KhataAdvance::query()
+                    ->where('store_id', $storeId)
+                    ->where('balance', '>', 0)
+                    ->count(),
                 'customers' => Customer::query()
                     ->whereHas('stores', fn ($q) => $q->whereKey($storeId))
                     ->count(),
             ],
             'dueSoon' => $dueSoon,
             'overdueUdhaars' => $overdueUdhaars,
+            'advanceHeld' => $advanceHeld,
             'riskMix' => $this->riskMix($storeId),
         ]);
     }
