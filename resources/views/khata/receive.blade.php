@@ -101,9 +101,9 @@
                             @error('method') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
-                        @if ($outstanding > 0)
-                            <div class="col-md-8">
-                                <label for="udhaar_id" class="form-label">Apply against</label>
+                        <div class="col-md-8">
+                            <label for="{{ $outstanding > 0 ? 'udhaar_id' : 'remark' }}" class="form-label">Apply against</label>
+                            @if ($outstanding > 0)
                                 <select id="udhaar_id" name="udhaar_id"
                                         class="form-select @error('udhaar_id') is-invalid @enderror">
                                     <option value="">Oldest outstanding first (recommended)</option>
@@ -119,8 +119,16 @@
                                 <div class="form-text">
                                     Leave as recommended to clear older bills first. Surplus beyond the selected bill becomes advance.
                                 </div>
-                            </div>
-                        @endif
+                            @else
+                                <input type="text" id="remark" name="remark" value="{{ old('remark') }}"
+                                       class="form-control @error('remark') is-invalid @enderror"
+                                       placeholder="Remark — e.g. booking advance for necklace, order deposit">
+                                @error('remark') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                <div class="form-text">
+                                    No open credit — enter a remark for this advance receive.
+                                </div>
+                            @endif
+                        </div>
 
                         <div class="col-md-4">
                             <label for="reference" class="form-label">Reference <span class="text-muted">(optional)</span></label>
@@ -129,6 +137,18 @@
                                    placeholder="UPI ref / cheque no.">
                             @error('reference') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
+
+                        @if ($outstanding > 0)
+                            <div class="col-12">
+                                <label for="remark" class="form-label">
+                                    Remark <span class="text-muted">(optional — used if surplus is kept as advance)</span>
+                                </label>
+                                <input type="text" id="remark" name="remark" value="{{ old('remark') }}"
+                                       class="form-control @error('remark') is-invalid @enderror"
+                                       placeholder="Remark for any advance surplus">
+                                @error('remark') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                        @endif
                     </div>
 
                     <div class="mt-4 d-flex gap-2">

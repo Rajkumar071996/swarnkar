@@ -49,6 +49,8 @@ class ReceivedEntryTest extends TestCase
             ->assertOk()
             ->assertSee('Received entry')
             ->assertSee('Amount received')
+            ->assertSee('Apply against')
+            ->assertSee('name="remark"', false)
             ->assertSee('saved as advance')
             ->assertSee($this->customer->full_name);
     }
@@ -85,6 +87,7 @@ class ReceivedEntryTest extends TestCase
                 'paid_on' => Carbon::today()->toDateString(),
                 'method' => 'upi',
                 'reference' => 'ADV1',
+                'remark' => 'Booking advance for necklace',
             ])
             ->assertRedirect(route('khata.show', $this->customer))
             ->assertSessionHas('success');
@@ -94,12 +97,17 @@ class ReceivedEntryTest extends TestCase
             $this->customer,
             $this->user->store_id,
         ));
+        $this->assertDatabaseHas('khata_advance_entries', [
+            'customer_id' => $this->customer->id,
+            'store_id' => $this->user->store_id,
+            'notes' => 'Booking advance for necklace',
+        ]);
 
         $this->actingAs($this->user)
             ->get(route('khata.show', $this->customer))
             ->assertOk()
             ->assertSee('Advance with you')
-            ->assertSee('Advance');
+            ->assertSee('Booking advance for necklace');
     }
 
     #[Test]

@@ -107,7 +107,9 @@ class KhataController extends Controller
             ])
             ->concat($advanceEntries->map(fn (KhataAdvanceEntry $entry) => [
                 'paid_on' => $entry->paid_on,
-                'against' => 'Advance',
+                'against' => $entry->notes
+                    ? 'Advance · '.Str::limit($entry->notes, 28)
+                    : 'Advance',
                 'method' => $entry->method,
                 'amount' => (float) $entry->amount,
             ]))
@@ -173,6 +175,7 @@ class KhataController extends Controller
             'paid_on' => ['required', 'date', 'before_or_equal:today'],
             'method' => ['required', 'in:cash,upi,card,bank_transfer,cheque'],
             'reference' => ['nullable', 'string', 'max:128'],
+            'remark' => ['nullable', 'string', 'max:255'],
             'udhaar_id' => [
                 'nullable',
                 'integer',
@@ -188,6 +191,7 @@ class KhataController extends Controller
             $data['reference'] ?? null,
             $request->user(),
             isset($data['udhaar_id']) ? (int) $data['udhaar_id'] : null,
+            $data['remark'] ?? null,
         );
 
         $parts = [];

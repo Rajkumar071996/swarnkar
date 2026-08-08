@@ -89,6 +89,7 @@ class UdhaarLedger
         ?string $reference,
         User $user,
         ?int $udhaarId = null,
+        ?string $remark = null,
     ): array {
         if ($amount <= 0) {
             throw ValidationException::withMessages([
@@ -114,7 +115,9 @@ class UdhaarLedger
             }
         }
 
-        return DB::transaction(function () use ($open, $amount, $paidOn, $method, $reference, $user, $customer) {
+        $advanceNote = filled($remark) ? trim($remark) : 'Received entry advance';
+
+        return DB::transaction(function () use ($open, $amount, $paidOn, $method, $reference, $user, $customer, $advanceNote) {
             $remaining = $amount;
             $payments = collect();
 
@@ -146,7 +149,7 @@ class UdhaarLedger
                     $method,
                     $reference,
                     $user,
-                    'Received entry advance',
+                    $advanceNote,
                 );
                 $advanceCredited = $remaining;
             }
