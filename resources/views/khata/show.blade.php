@@ -5,7 +5,7 @@
 @section('subheading', 'Udhar khata at ' . auth()->user()->store->name)
 
 @section('actions')
-    <a href="{{ route('lookup.report', $customer) }}" class="btn btn-outline-primary">
+    <a href="{{ route('lookup.report', $customer) }}" class="btn btn-primary">
         <i class="bi bi-shield-check me-1"></i>Check GoldScore
     </a>
     <a href="{{ route('khata.receive.customer', $customer) }}" class="btn btn-success">
