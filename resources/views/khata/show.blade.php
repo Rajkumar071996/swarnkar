@@ -9,11 +9,11 @@
         <i class="bi bi-shield-check me-1"></i>Check GoldScore
     </a>
     <a href="{{ route('khata.receive.customer', $customer) }}" class="btn btn-success">
-        <i class="bi bi-cash-coin me-1"></i>Received entry
+        ₹ You Got
     </a>
     @can('create', App\Models\Udhaar::class)
-        <a href="{{ route('udhaars.create', ['customer' => $customer->id]) }}" class="btn btn-primary">
-            <i class="bi bi-plus-lg me-1"></i>Give credit
+        <a href="{{ route('udhaars.create', ['customer' => $customer->id]) }}" class="btn btn-danger">
+            ₹ You Gave
         </a>
     @endcan
 @endsection
