@@ -35,4 +35,16 @@ class Store extends Model
     {
         return trim(sprintf('A jeweller in %s, %s', $this->city, $this->state), ' ,');
     }
+
+    public function fullAddress(): ?string
+    {
+        $parts = array_values(array_filter([
+            $this->address_line,
+            $this->city,
+            $this->state,
+            $this->pincode,
+        ], fn (?string $part) => filled($part)));
+
+        return $parts === [] ? null : implode(', ', $parts);
+    }
 }

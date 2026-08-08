@@ -168,7 +168,13 @@ class ApiContractTest extends TestCase
     #[Test]
     public function network_exposure_needs_consent_and_then_names_no_competitor(): void
     {
-        $rivalStore = Store::factory()->create(['name' => 'Mahalaxmi Jewellers', 'city' => 'Ajmer']);
+        $rivalStore = Store::factory()->create([
+            'name' => 'Mahalaxmi Jewellers',
+            'address_line' => '44 Diggi Bazaar',
+            'city' => 'Ajmer',
+            'state' => 'Rajasthan',
+            'pincode' => '305001',
+        ]);
 
         Udhaar::factory()->create([
             'store_id' => $rivalStore->id,

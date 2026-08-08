@@ -62,12 +62,15 @@ class CreditExposure
             }
 
             $key = $account->store_id;
+            $store = $storeNames[$key] ?? null;
             $byStore[$key] ??= [
                 // The shop asking is named; everyone else is a city, so a lookup
-                // cannot be used to map a competitor's customer book.
+                // cannot be used to map a competitor's customer book. The street
+                // address is shown so the counter knows where the money sits.
                 'label' => $isOwnStore
                     ? 'Your store'
-                    : ($storeNames[$key]?->anonymisedLabel() ?? 'Another jeweller'),
+                    : ($store?->anonymisedLabel() ?? 'Another jeweller'),
+                'address' => $store?->fullAddress(),
                 'outstanding' => 0.0,
                 'overdue' => 0.0,
                 'own_store' => $isOwnStore,

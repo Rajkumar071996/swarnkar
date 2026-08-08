@@ -14,7 +14,7 @@ use Illuminate\Support\Collection;
 class CreditExposureSummary
 {
     /**
-     * @param  Collection<int, array{label: string, outstanding: float, overdue: float, own_store: bool}>  $stores
+     * @param  Collection<int, array{label: string, address: ?string, outstanding: float, overdue: float, own_store: bool}>  $stores
      */
     public function __construct(
         public readonly float $total,

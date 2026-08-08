@@ -43,8 +43,10 @@ class ScoreReportTest extends TestCase
 
         $this->rivalStore = Store::factory()->create([
             'name' => 'Mahalaxmi Jewellers',
+            'address_line' => '44 Diggi Bazaar',
             'city' => 'Ajmer',
             'state' => 'Rajasthan',
+            'pincode' => '305001',
         ]);
 
         $this->giveCustomerHistory();
@@ -164,9 +166,11 @@ class ScoreReportTest extends TestCase
             ->get(route('lookup.report', $this->customer))
             ->assertOk();
 
-        // The city is shown so the jeweller knows the reach of the history,
-        // but never which shop it came from.
-        $response->assertSee('Ajmer')->assertDontSee('Mahalaxmi Jewellers');
+        // The address is shown so the jeweller knows where the money sits,
+        // but never which shop name it came from.
+        $response->assertSee('44 Diggi Bazaar, Ajmer, Rajasthan, 305001')
+            ->assertSee('Ajmer')
+            ->assertDontSee('Mahalaxmi Jewellers');
     }
 
     #[Test]

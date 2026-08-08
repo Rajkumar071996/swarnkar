@@ -158,6 +158,9 @@
                                     @if ($row['own_store'])
                                         <span class="badge bg-secondary ms-1">You</span>
                                     @endif
+                                    @if (! empty($row['address']))
+                                        <div class="small text-muted mt-1">{{ $row['address'] }}</div>
+                                    @endif
                                 </td>
                                 <td class="text-end fw-semibold">{{ money($row['outstanding']) }}</td>
                                 <td class="text-end {{ $row['overdue'] > 0 ? 'text-danger' : 'text-muted' }}">
