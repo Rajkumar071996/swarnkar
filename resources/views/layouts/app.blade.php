@@ -8,57 +8,70 @@
     @vite(['resources/scss/app.scss', 'resources/js/app.js'])
 </head>
 <body>
+{{-- Mobile top bar --}}
+<header class="gs-topbar d-lg-none">
+    <button class="btn btn-link text-white p-0 border-0"
+            type="button"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#gsMobileNav"
+            aria-controls="gsMobileNav"
+            aria-label="Open menu">
+        <i class="bi bi-list fs-3"></i>
+    </button>
+
+    <a href="{{ route('dashboard') }}" class="text-white text-decoration-none fw-semibold">
+        <i class="bi bi-gem text-warning me-1"></i>GoldScore
+    </a>
+
+    <span class="small text-white-50 text-truncate gs-topbar-store">
+        {{ auth()->user()->store->name }}
+    </span>
+</header>
+
+{{-- Mobile offcanvas menu --}}
+<div class="offcanvas offcanvas-start gs-offcanvas d-lg-none" tabindex="-1" id="gsMobileNav"
+     aria-labelledby="gsMobileNavLabel">
+    <div class="offcanvas-header border-bottom border-secondary">
+        <h2 class="offcanvas-title h5 text-white mb-0" id="gsMobileNavLabel">
+            <i class="bi bi-gem text-warning me-2"></i>GoldScore
+        </h2>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"
+                aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column p-3">
+        @include('partials.nav-links', ['dismissOffcanvas' => true])
+
+        <hr class="text-secondary">
+
+        <div class="text-white-50 small px-2 mt-auto">
+            <div class="fw-semibold text-white">{{ auth()->user()->name }}</div>
+            <div>{{ auth()->user()->role->label() }}</div>
+            <div class="mt-1">{{ auth()->user()->store->name }}</div>
+        </div>
+
+        <form method="POST" action="{{ route('logout') }}" class="px-2 mt-3">
+            @csrf
+            <button class="btn btn-sm btn-outline-light w-100" type="submit">
+                <i class="bi bi-box-arrow-right me-1"></i>Sign out
+            </button>
+        </form>
+    </div>
+</div>
+
 <div class="container-fluid">
     <div class="row">
-        <nav class="col-12 col-lg-2 gs-sidebar p-3">
+        {{-- Desktop sidebar --}}
+        <nav class="col-lg-2 gs-sidebar d-none d-lg-flex flex-column p-3">
             <a href="{{ route('dashboard') }}" class="d-flex align-items-center text-white text-decoration-none mb-4">
                 <i class="bi bi-gem fs-4 me-2 text-warning"></i>
                 <span class="fs-5 fw-semibold">GoldScore</span>
             </a>
 
-            <ul class="nav nav-pills flex-column">
-                <li class="nav-item">
-                    <a href="{{ route('dashboard') }}" class="nav-link @active('dashboard')">
-                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('lookup.index') }}" class="nav-link @active('lookup.*')">
-                        <i class="bi bi-search me-2"></i>Check GoldScore
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('customers.index') }}" class="nav-link @active('customers.*')">
-                        <i class="bi bi-people me-2"></i>Customers
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('khata.index') }}" class="nav-link @active('khata.index', 'khata.show')">
-                        <i class="bi bi-journal-bookmark me-2"></i>Udhar Khata
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('khata.receive') }}" class="nav-link @active('khata.receive', 'khata.receive.customer')">
-                        <i class="bi bi-cash-coin me-2"></i>Received Entry
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('udhaars.index') }}" class="nav-link @active('udhaars.*')">
-                        <i class="bi bi-receipt me-2"></i>Credit Entries
-                    </a>
-                </li>
-                @can('manageStaff', App\Models\User::class)
-                    <li class="nav-item">
-                        <a href="{{ route('staff.index') }}" class="nav-link @active('staff.*')">
-                            <i class="bi bi-person-badge me-2"></i>Staff
-                        </a>
-                    </li>
-                @endcan
-            </ul>
+            @include('partials.nav-links')
 
             <hr class="text-secondary">
 
-            <div class="text-white-50 small px-2">
+            <div class="text-white-50 small px-2 mt-auto">
                 <div class="fw-semibold text-white">{{ auth()->user()->name }}</div>
                 <div>{{ auth()->user()->role->label() }}</div>
                 <div class="mt-1">{{ auth()->user()->store->name }}</div>
@@ -72,15 +85,15 @@
             </form>
         </nav>
 
-        <main class="col-12 col-lg-10 py-4 px-4">
-            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
-                <div>
-                    <h1 class="h3 mb-0">@yield('heading', 'Dashboard')</h1>
+        <main class="col-12 col-lg-10 gs-main">
+            <div class="gs-page-header d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3 mb-3 mb-md-4">
+                <div class="min-w-0">
+                    <h1 class="h4 h3-md mb-0 text-break">@yield('heading', 'Dashboard')</h1>
                     @hasSection('subheading')
-                        <p class="text-muted mb-0">@yield('subheading')</p>
+                        <p class="text-muted mb-0 small">@yield('subheading')</p>
                     @endif
                 </div>
-                <div>@yield('actions')</div>
+                <div class="gs-page-actions d-flex flex-wrap gap-2">@yield('actions')</div>
             </div>
 
             @include('partials.alerts')

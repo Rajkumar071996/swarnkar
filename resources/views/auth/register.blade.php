@@ -19,7 +19,17 @@
             @enderror
         </div>
 
-        <div class="row g-2 mb-4">
+        <div class="mb-3">
+            <label for="address_line" class="form-label">Shop address</label>
+            <textarea id="address_line" name="address_line" rows="2"
+                      class="form-control @error('address_line') is-invalid @enderror"
+                      placeholder="Shop no., street, market / area" required>{{ old('address_line') }}</textarea>
+            @error('address_line')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="row g-2 mb-3">
             <div class="col-6">
                 <label for="city" class="form-label">City</label>
                 <input type="text" id="city" name="city" value="{{ old('city') }}"
@@ -36,6 +46,16 @@
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
+        </div>
+
+        <div class="mb-4">
+            <label for="pincode" class="form-label">PIN code</label>
+            <input type="text" id="pincode" name="pincode" value="{{ old('pincode') }}"
+                   class="form-control @error('pincode') is-invalid @enderror"
+                   inputmode="numeric" maxlength="6" placeholder="6-digit PIN" required>
+            @error('pincode')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
         <h2 class="h6 text-uppercase text-muted mb-3">Owner account</h2>

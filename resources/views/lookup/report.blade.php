@@ -224,22 +224,27 @@
     @endif
 
     <div class="card gs-stat-card mt-3">
-        <div class="card-body d-flex flex-wrap gap-2">
-            <span class="text-muted me-3 align-self-center">Quick actions</span>
-            @can('create', App\Models\Udhaar::class)
-                <a href="{{ route('udhaars.create', ['customer' => $customer->id]) }}" class="btn btn-outline-primary">
-                    <i class="bi bi-plus-lg me-1"></i>Give credit
+        <div class="card-body">
+            <div class="text-muted small mb-2">Quick actions</div>
+            <div class="gs-page-actions d-flex flex-wrap gap-2">
+                @can('create', App\Models\Udhaar::class)
+                    <a href="{{ route('udhaars.create', ['customer' => $customer->id]) }}" class="btn btn-outline-primary">
+                        <i class="bi bi-plus-lg me-1"></i>Give credit
+                    </a>
+                @endcan
+                <a href="{{ route('khata.show', $customer) }}" class="btn btn-outline-primary">
+                    <i class="bi bi-journal-bookmark me-1"></i>Open khata
                 </a>
-            @endcan
-            <a href="{{ route('khata.show', $customer) }}" class="btn btn-outline-primary">
-                <i class="bi bi-journal-bookmark me-1"></i>Open khata
-            </a>
-            @can('create', App\Models\DefaultFlag::class)
-                <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#reportDefaultModal">
-                    <i class="bi bi-flag me-1"></i>Report default
-                </button>
-            @endcan
-            <a href="{{ route('customers.show', $customer) }}" class="btn btn-outline-secondary">Open profile</a>
+                <a href="{{ route('khata.receive.customer', $customer) }}" class="btn btn-outline-success">
+                    <i class="bi bi-cash-coin me-1"></i>Received entry
+                </a>
+                @can('create', App\Models\DefaultFlag::class)
+                    <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#reportDefaultModal">
+                        <i class="bi bi-flag me-1"></i>Report default
+                    </button>
+                @endcan
+                <a href="{{ route('customers.show', $customer) }}" class="btn btn-outline-secondary">Open profile</a>
+            </div>
         </div>
     </div>
 

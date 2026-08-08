@@ -35,8 +35,10 @@ class RegisterController extends Controller
 
         $data = $request->validate([
             'store_name' => ['required', 'string', 'max:120'],
+            'address_line' => ['required', 'string', 'max:255'],
             'city' => ['required', 'string', 'max:100'],
             'state' => ['required', 'string', 'max:100'],
+            'pincode' => ['required', 'string', 'regex:/^\d{6}$/'],
             'name' => ['required', 'string', 'max:120'],
             'phone' => MobileNumber::rules(unique: true),
             'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
@@ -44,6 +46,7 @@ class RegisterController extends Controller
         ], [
             'phone.regex' => 'Enter a valid 10-digit Indian mobile number.',
             'phone.unique' => 'An account with this mobile number already exists. Sign in instead.',
+            'pincode.regex' => 'Enter a valid 6-digit PIN code.',
         ]);
 
         $user = DB::transaction(function () use ($data) {
@@ -51,8 +54,10 @@ class RegisterController extends Controller
                 'name' => $data['store_name'],
                 'phone' => $data['phone'],
                 'email' => $data['email'] ?? null,
+                'address_line' => $data['address_line'],
                 'city' => $data['city'],
                 'state' => $data['state'],
+                'pincode' => $data['pincode'],
             ]);
 
             $user = User::create([

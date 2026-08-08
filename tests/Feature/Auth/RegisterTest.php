@@ -25,15 +25,7 @@ class RegisterTest extends TestCase
     #[Test]
     public function a_jeweller_can_open_a_store_and_land_on_the_dashboard(): void
     {
-        $response = $this->post(route('register.store'), [
-            'store_name' => 'Laxmi Jewellers',
-            'city' => 'Jaipur',
-            'state' => 'Rajasthan',
-            'name' => 'Suresh Agarwal',
-            'phone' => '9829012345',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ]);
+        $response = $this->post(route('register.store'), $this->validPayload());
 
         $response->assertRedirect(route('dashboard'));
         $this->assertAuthenticated();
@@ -44,9 +36,33 @@ class RegisterTest extends TestCase
         $this->assertSame(UserRole::Owner, $user->role);
         $this->assertTrue($user->is_active);
         $this->assertSame('Laxmi Jewellers', $user->store->name);
+        $this->assertSame('Shop 14, Johari Bazaar', $user->store->address_line);
         $this->assertSame('Jaipur', $user->store->city);
+        $this->assertSame('Rajasthan', $user->store->state);
+        $this->assertSame('302003', $user->store->pincode);
         $this->assertSame('9829012345', $user->store->phone);
         $this->assertSame(1, Store::count());
+    }
+
+    #[Test]
+    public function the_register_form_asks_for_the_full_shop_address(): void
+    {
+        $this->get(route('register'))
+            ->assertOk()
+            ->assertSee('Shop address')
+            ->assertSee('name="address_line"', false)
+            ->assertSee('name="pincode"', false);
+    }
+
+    #[Test]
+    public function registration_requires_the_shop_address(): void
+    {
+        $this->post(route('register.store'), $this->validPayload([
+            'address_line' => '',
+            'pincode' => '',
+        ]))->assertSessionHasErrors(['address_line', 'pincode']);
+
+        $this->assertGuest();
     }
 
     #[Test]
@@ -54,15 +70,9 @@ class RegisterTest extends TestCase
     {
         User::factory()->owner()->create(['phone' => '9829011223']);
 
-        $this->post(route('register.store'), [
-            'store_name' => 'Another Shop',
-            'city' => 'Ajmer',
-            'state' => 'Rajasthan',
-            'name' => 'Someone Else',
+        $this->post(route('register.store'), $this->validPayload([
             'phone' => '9829011223',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ])->assertSessionHasErrors('phone');
+        ]))->assertSessionHasErrors('phone');
 
         $this->assertGuest();
         $this->assertSame(1, Store::count());
@@ -71,17 +81,30 @@ class RegisterTest extends TestCase
     #[Test]
     public function country_code_prefixes_are_stripped_before_saving(): void
     {
-        $this->post(route('register.store'), [
-            'store_name' => 'Laxmi Jewellers',
-            'city' => 'Jaipur',
-            'state' => 'Rajasthan',
-            'name' => 'Suresh Agarwal',
+        $this->post(route('register.store'), $this->validPayload([
             'phone' => '+91 98290 12345',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ])->assertRedirect(route('dashboard'));
+        ]))->assertRedirect(route('dashboard'));
 
         $this->assertDatabaseHas('users', ['phone' => '9829012345']);
+    }
+
+    /**
+     * @param  array<string, mixed>  $overrides
+     * @return array<string, mixed>
+     */
+    private function validPayload(array $overrides = []): array
+    {
+        return array_merge([
+            'store_name' => 'Laxmi Jewellers',
+            'address_line' => 'Shop 14, Johari Bazaar',
+            'city' => 'Jaipur',
+            'state' => 'Rajasthan',
+            'pincode' => '302003',
+            'name' => 'Suresh Agarwal',
+            'phone' => '9829012345',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ], $overrides);
     }
 
     #[Test]

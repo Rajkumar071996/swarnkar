@@ -32,7 +32,7 @@
         </div>
     </div>
 
-    <ul class="nav nav-pills mb-3">
+    <ul class="nav nav-pills gs-filter-pills mb-3">
         @foreach (['outstanding' => 'Outstanding', 'overdue' => 'Overdue', 'all' => 'All'] as $key => $label)
             <li class="nav-item">
                 <a class="nav-link {{ $filter === $key ? 'active' : '' }}"

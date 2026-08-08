@@ -43,7 +43,7 @@
         </div>
     </div>
 
-    <ul class="nav nav-pills mb-3">
+    <ul class="nav nav-pills gs-filter-pills mb-3">
         @foreach ([
             'outstanding' => 'With balance',
             'overdue' => 'Overdue',
@@ -63,12 +63,12 @@
                 <thead class="table-light">
                 <tr>
                     <th>Customer</th>
-                    <th>GoldScore</th>
-                    <th class="text-center">Entries</th>
-                    <th class="text-end">Credit given</th>
-                    <th class="text-end">Paid</th>
+                    <th class="d-none d-md-table-cell">GoldScore</th>
+                    <th class="text-center d-none d-lg-table-cell">Entries</th>
+                    <th class="text-end d-none d-lg-table-cell">Credit given</th>
+                    <th class="text-end d-none d-xl-table-cell">Paid</th>
                     <th class="text-end">Outstanding</th>
-                    <th>Oldest overdue</th>
+                    <th class="d-none d-md-table-cell">Oldest overdue</th>
                     <th></th>
                 </tr>
                 </thead>
@@ -79,19 +79,24 @@
                         <td>
                             <div class="fw-semibold">{{ $account->full_name }}</div>
                             <div class="small text-muted font-monospace">{{ $account->maskedMobile() }}</div>
+                            <div class="d-md-none mt-1">
+                                <span class="badge {{ $band->badgeClass() }}">
+                                    {{ $account->latestScore?->score ?? 'Unscored' }}
+                                </span>
+                            </div>
                         </td>
-                        <td>
+                        <td class="d-none d-md-table-cell">
                             <span class="badge {{ $band->badgeClass() }}">
                                 {{ $account->latestScore?->score ?? 'Unscored' }}
                             </span>
                         </td>
-                        <td class="text-center">{{ $account->entry_count }}</td>
-                        <td class="text-end">{{ money($account->extended_total) }}</td>
-                        <td class="text-end text-success">{{ money($account->paid_total) }}</td>
+                        <td class="text-center d-none d-lg-table-cell">{{ $account->entry_count }}</td>
+                        <td class="text-end d-none d-lg-table-cell">{{ money($account->extended_total) }}</td>
+                        <td class="text-end text-success d-none d-xl-table-cell">{{ money($account->paid_total) }}</td>
                         <td class="text-end fw-semibold {{ $account->outstanding_total > 0 ? '' : 'text-muted' }}">
                             {{ money($account->outstanding_total ?? 0) }}
                         </td>
-                        <td>
+                        <td class="d-none d-md-table-cell">
                             @if ($account->oldest_overdue_on)
                                 <span class="text-danger">
                                     {{ (int) \Illuminate\Support\Carbon::parse($account->oldest_overdue_on)->diffInDays(now()) }} days
@@ -103,7 +108,7 @@
                         </td>
                         <td class="text-end">
                             <a href="{{ route('khata.show', $account) }}" class="btn btn-sm btn-outline-secondary">
-                                Open khata
+                                Open
                             </a>
                         </td>
                     </tr>

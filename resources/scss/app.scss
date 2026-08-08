@@ -10,27 +10,114 @@ $font-family-sans-serif: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-ser
 @import 'bootstrap/scss/bootstrap';
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
+// ---------------------------------------------------------------------------
+// Shell
+// ---------------------------------------------------------------------------
+
 .gs-sidebar {
     min-height: 100vh;
     background: #1f1a12;
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    max-height: 100vh;
+    overflow-y: auto;
 }
 
-.gs-sidebar .nav-link {
+.gs-sidebar .nav-link,
+.gs-offcanvas .nav-link {
     color: rgba(255, 255, 255, 0.72);
     border-radius: 0.5rem;
-    padding: 0.55rem 0.85rem;
+    padding: 0.65rem 0.85rem;
     margin-bottom: 0.15rem;
 }
 
-.gs-sidebar .nav-link:hover {
+.gs-sidebar .nav-link:hover,
+.gs-offcanvas .nav-link:hover {
     color: #fff;
     background: rgba(255, 255, 255, 0.08);
 }
 
-.gs-sidebar .nav-link.active {
+.gs-sidebar .nav-link.active,
+.gs-offcanvas .nav-link.active {
     color: #fff;
     background: $primary;
 }
+
+.gs-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 3.25rem;
+    padding: 0.55rem 1rem;
+    background: #1f1a12;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.gs-topbar-store {
+    margin-left: auto;
+    max-width: 40%;
+    text-align: right;
+}
+
+.gs-offcanvas {
+    background: #1f1a12;
+    color: #fff;
+    width: min(20rem, 86vw);
+}
+
+.gs-main {
+    padding: 1rem;
+    min-width: 0;
+}
+
+@media (min-width: 768px) {
+    .gs-main {
+        padding: 1.5rem 1.75rem;
+    }
+}
+
+@media (min-width: 992px) {
+    .gs-main {
+        padding: 1.75rem 2rem;
+    }
+}
+
+.gs-page-actions {
+    width: 100%;
+}
+
+.gs-page-actions > .btn,
+.gs-page-actions > a.btn {
+    flex: 1 1 auto;
+    min-width: calc(50% - 0.25rem);
+    justify-content: center;
+}
+
+@media (min-width: 576px) {
+    .gs-page-actions {
+        width: auto;
+    }
+
+    .gs-page-actions > .btn,
+    .gs-page-actions > a.btn {
+        flex: 0 0 auto;
+        min-width: 0;
+    }
+}
+
+@media (min-width: 768px) {
+    .h3-md {
+        font-size: calc(1.3rem + 0.6vw) !important;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Cards & tables
+// ---------------------------------------------------------------------------
 
 .gs-stat-card {
     border: 1px solid rgba(0, 0, 0, 0.06);
@@ -38,20 +125,58 @@ $font-family-sans-serif: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-ser
     background: #fff;
 }
 
-// Score dial: a conic gradient sweeps from 300 to 900 via the --gs-sweep variable.
+.table-responsive {
+    -webkit-overflow-scrolling: touch;
+}
+
+.table {
+    --bs-table-bg: transparent;
+}
+
+@media (max-width: 575.98px) {
+    .table {
+        font-size: 0.875rem;
+    }
+
+    .table th,
+    .table td {
+        padding: 0.55rem 0.65rem;
+        white-space: nowrap;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .btn {
+        min-height: 2.5rem;
+    }
+
+    .form-control,
+    .form-select {
+        min-height: 2.75rem;
+        font-size: 1rem; // keeps iOS from zooming on focus
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Score dial
+// ---------------------------------------------------------------------------
+
 .gs-score-dial {
     --gs-sweep: 0deg;
-    width: 190px;
-    height: 190px;
+    width: min(190px, 48vw);
+    height: min(190px, 48vw);
     border-radius: 50%;
     display: grid;
     place-items: center;
     background: conic-gradient(var(--gs-band-color, #{$primary}) var(--gs-sweep), #e6e1d6 0);
+    margin-inline: auto;
 }
 
 .gs-score-dial-inner {
-    width: 152px;
-    height: 152px;
+    width: 80%;
+    height: 80%;
     border-radius: 50%;
     background: #fff;
     display: grid;
@@ -60,7 +185,7 @@ $font-family-sans-serif: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-ser
 }
 
 .gs-score-value {
-    font-size: 2.75rem;
+    font-size: clamp(1.75rem, 8vw, 2.75rem);
     font-weight: 700;
     line-height: 1;
 }
@@ -79,4 +204,34 @@ $font-family-sans-serif: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-ser
 
 .gs-band-unscored {
     --gs-band-color: #{$secondary};
+}
+
+// ---------------------------------------------------------------------------
+// Auth / guest
+// ---------------------------------------------------------------------------
+
+.gs-guest-shell {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    padding: 1.25rem;
+}
+
+.gs-guest-shell > main {
+    width: 100%;
+    max-width: 30rem;
+    margin-inline: auto;
+}
+
+.gs-filter-pills {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.35rem;
+    padding-bottom: 0.15rem;
+}
+
+.gs-filter-pills .nav-link {
+    white-space: nowrap;
 }

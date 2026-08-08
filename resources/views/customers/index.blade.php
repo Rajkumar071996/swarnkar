@@ -32,8 +32,8 @@
                 <tr>
                     <th>Name</th>
                     <th>Mobile</th>
-                    <th>City</th>
-                    <th>Last known score</th>
+                    <th class="d-none d-md-table-cell">City</th>
+                    <th>Score</th>
                     <th class="text-end">Actions</th>
                 </tr>
                 </thead>
@@ -42,11 +42,12 @@
                     <tr>
                         <td class="fw-semibold">{{ $customer->full_name }}</td>
                         <td class="font-monospace">{{ $customer->maskedMobile() }}</td>
-                        <td>{{ $customer->city ?: '--' }}</td>
+                        <td class="d-none d-md-table-cell">{{ $customer->city ?: '--' }}</td>
                         <td>
                             @if ($customer->latestScore)
                                 <span class="badge {{ $customer->latestScore->band->badgeClass() }}">
-                                    {{ $customer->latestScore->score ?? 'NR' }} {{ $customer->latestScore->band->label() }}
+                                    {{ $customer->latestScore->score ?? 'NR' }}
+                                    <span class="d-none d-sm-inline">{{ $customer->latestScore->band->label() }}</span>
                                 </span>
                             @else
                                 <span class="text-muted">Not computed</span>
