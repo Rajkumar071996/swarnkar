@@ -19,7 +19,12 @@
                 <div class="card-body text-center p-4">
                     <div class="text-uppercase text-muted small mb-1">Current customer profile</div>
                     <div class="h4 mb-1">{{ $customer->full_name }}</div>
-                    <div class="text-muted font-monospace mb-4">{{ $customer->maskedMobile() }}</div>
+                    <div class="text-muted font-monospace">{{ $customer->maskedMobile() }}</div>
+                    @if ($customer->fullAddress())
+                        <div class="text-muted small mt-1 mb-4">{{ $customer->fullAddress() }}</div>
+                    @else
+                        <div class="mb-4"></div>
+                    @endif
 
                     <div class="d-flex justify-content-center mb-3">
                         <div class="gs-score-dial {{ $snapshot->band->cssClass() }}"

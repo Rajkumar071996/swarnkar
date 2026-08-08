@@ -143,6 +143,18 @@ class Customer extends Model
         return strlen($digits) >= 4 ? str_repeat('X', max(0, strlen($digits) - 4)).substr($digits, -4) : '';
     }
 
+    public function fullAddress(): ?string
+    {
+        $parts = array_values(array_filter([
+            $this->address_line,
+            $this->city,
+            $this->state,
+            $this->pincode,
+        ], fn (?string $part) => filled($part)));
+
+        return $parts === [] ? null : implode(', ', $parts);
+    }
+
     public function maskedPan(): ?string
     {
         return $this->pan ? substr($this->pan, 0, 3).'XXXX'.substr($this->pan, -3) : null;

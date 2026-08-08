@@ -33,7 +33,12 @@ class ScoreReportTest extends TestCase
         parent::setUp();
 
         $this->user = User::factory()->owner()->create();
-        $this->customer = Customer::factory()->named('Rajesh Kumar')->withMobile('9829100001')->create();
+        $this->customer = Customer::factory()->named('Rajesh Kumar')->withMobile('9829100001')->create([
+            'address_line' => '12 Johari Bazaar',
+            'city' => 'Jaipur',
+            'state' => 'Rajasthan',
+            'pincode' => '302003',
+        ]);
         $this->customer->stores()->attach($this->user->store_id, ['first_seen_at' => now()]);
 
         $this->rivalStore = Store::factory()->create([
@@ -88,6 +93,7 @@ class ScoreReportTest extends TestCase
             ->get(route('lookup.report', $this->customer))
             ->assertOk()
             ->assertSee('Rajesh Kumar')
+            ->assertSee('12 Johari Bazaar, Jaipur, Rajasthan, 302003')
             ->assertSee('Store credit settlement')
             ->assertSee('Headroom to lend');
     }
