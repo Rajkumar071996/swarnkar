@@ -16,6 +16,8 @@ use Illuminate\Validation\ValidationException;
 
 class UdhaarLedger
 {
+    public function __construct(private readonly KhataAdvanceService $advances) {}
+
     /**
      * @param  array<string, mixed>  $attributes
      */
@@ -31,6 +33,8 @@ class UdhaarLedger
             $udhaar->syncStatus();
             $udhaar->save();
 
+            $this->applyAdvanceToUdhaar($udhaar, $user);
+
             AuditLog::record('udhaar.issued', $udhaar, [
                 'customer_id' => $udhaar->customer_id,
                 'principal' => (float) $udhaar->principal_amount,
@@ -38,7 +42,7 @@ class UdhaarLedger
 
             CustomerLedgerChanged::dispatch($udhaar->customer, 'udhaar.issued');
 
-            return $udhaar;
+            return $udhaar->fresh();
         });
     }
 
@@ -72,11 +76,10 @@ class UdhaarLedger
     }
 
     /**
-     * Records money received against a customer's khata. The jeweller can aim
-     * it at one bill, or leave the target blank and the receipt is applied to
-     * the oldest outstanding entries first — the way a running khata is kept.
+     * Records money received against a customer's khata. Applied to open bills
+     * first (FIFO or a chosen bill); any surplus is kept as an advance.
      *
-     * @return Collection<int, UdhaarPayment>
+     * @return array{payments: Collection<int, UdhaarPayment>, advance_credited: float}
      */
     public function receive(
         Customer $customer,
@@ -86,7 +89,7 @@ class UdhaarLedger
         ?string $reference,
         User $user,
         ?int $udhaarId = null,
-    ): Collection {
+    ): array {
         if ($amount <= 0) {
             throw ValidationException::withMessages([
                 'amount' => 'Enter how much was received.',
@@ -111,20 +114,6 @@ class UdhaarLedger
             }
         }
 
-        $available = round($open->sum(fn (Udhaar $u) => $u->outstandingAmount()), 2);
-
-        if ($available <= 0) {
-            throw ValidationException::withMessages([
-                'amount' => 'This customer has nothing outstanding at your store.',
-            ]);
-        }
-
-        if ($amount > $available + 0.009) {
-            throw ValidationException::withMessages([
-                'amount' => 'That is more than the '.money($available).' still outstanding on this khata.',
-            ]);
-        }
-
         return DB::transaction(function () use ($open, $amount, $paidOn, $method, $reference, $user, $customer) {
             $remaining = $amount;
             $payments = collect();
@@ -146,12 +135,32 @@ class UdhaarLedger
                 $remaining = round($remaining - $slice, 2);
             }
 
+            $advanceCredited = 0.0;
+
+            if ($remaining > 0.009) {
+                $this->advances->credit(
+                    $customer,
+                    $user->store_id,
+                    $remaining,
+                    $paidOn,
+                    $method,
+                    $reference,
+                    $user,
+                    'Received entry advance',
+                );
+                $advanceCredited = $remaining;
+            }
+
             AuditLog::record('khata.receipt_recorded', $customer, [
                 'amount' => $amount,
                 'payments' => $payments->count(),
+                'advance_credited' => $advanceCredited,
             ]);
 
-            return $payments;
+            return [
+                'payments' => $payments,
+                'advance_credited' => $advanceCredited,
+            ];
         });
     }
 
@@ -187,5 +196,33 @@ class UdhaarLedger
             ->whereIn('status', [UdhaarStatus::Open->value, UdhaarStatus::PartiallyPaid->value])
             ->whereDate('due_on', '<', $cutoff)
             ->update(['status' => UdhaarStatus::Defaulted->value]);
+    }
+
+    private function applyAdvanceToUdhaar(Udhaar $udhaar, User $user): void
+    {
+        $available = $this->advances->balance($udhaar->customer, $udhaar->store_id);
+        $slice = min($available, $udhaar->outstandingAmount());
+
+        if ($slice <= 0.009) {
+            return;
+        }
+
+        $this->advances->debit(
+            $udhaar->customer,
+            $udhaar->store_id,
+            $slice,
+            $udhaar->issued_on ?? Carbon::today(),
+            $user,
+            $udhaar->id,
+        );
+
+        $this->recordPayment(
+            $udhaar->fresh(),
+            $slice,
+            $udhaar->issued_on ?? Carbon::today(),
+            'advance',
+            null,
+            $user,
+        );
     }
 }

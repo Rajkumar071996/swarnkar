@@ -77,7 +77,7 @@ class UdhaarLedgerTest extends TestCase
         $older = $this->issue(20000, Carbon::today()->subMonths(2));
         $newer = $this->issue(30000, Carbon::today()->subMonth());
 
-        $payments = $this->ledger->receive(
+        $result = $this->ledger->receive(
             $this->customer,
             25000,
             Carbon::today(),
@@ -86,7 +86,8 @@ class UdhaarLedgerTest extends TestCase
             $this->user,
         );
 
-        $this->assertCount(2, $payments);
+        $this->assertCount(2, $result['payments']);
+        $this->assertSame(0.0, $result['advance_credited']);
         $this->assertSame(0.0, $older->fresh()->outstandingAmount());
         $this->assertSame(UdhaarStatus::Settled, $older->fresh()->status);
         $this->assertSame(25000.0, $newer->fresh()->outstandingAmount());

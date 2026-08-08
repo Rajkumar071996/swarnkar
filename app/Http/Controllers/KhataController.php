@@ -5,14 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\Udhaar;
 use App\Models\UdhaarPayment;
+use App\Models\KhataAdvanceEntry;
 use App\Services\ConsentService;
 use App\Services\CreditExposure;
+use App\Services\KhataAdvanceService;
 use App\Services\UdhaarLedger;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 /**
@@ -26,6 +29,7 @@ class KhataController extends Controller
         private readonly CreditExposure $exposure,
         private readonly ConsentService $consent,
         private readonly UdhaarLedger $ledger,
+        private readonly KhataAdvanceService $advances,
     ) {}
 
     public function index(Request $request): View
@@ -87,6 +91,29 @@ class KhataController extends Controller
             ->latest('paid_on')
             ->get();
 
+        $advanceEntries = KhataAdvanceEntry::query()
+            ->where('store_id', $storeId)
+            ->where('customer_id', $customer->id)
+            ->where('amount', '>', 0)
+            ->latest('paid_on')
+            ->get();
+
+        $history = $payments
+            ->map(fn (UdhaarPayment $payment) => [
+                'paid_on' => $payment->paid_on,
+                'against' => Str::limit($payment->udhaar->item_description, 18),
+                'method' => $payment->method,
+                'amount' => (float) $payment->amount,
+            ])
+            ->concat($advanceEntries->map(fn (KhataAdvanceEntry $entry) => [
+                'paid_on' => $entry->paid_on,
+                'against' => 'Advance',
+                'method' => $entry->method,
+                'amount' => (float) $entry->amount,
+            ]))
+            ->sortByDesc(fn (array $row) => $row['paid_on']->format('Y-m-d').'-'.$row['amount'])
+            ->values();
+
         // Cross-store figures stay behind the consent gate; the shop's own
         // book is theirs to read whenever they like.
         $grant = $this->consent->activeGrant($customer, $storeId);
@@ -95,6 +122,8 @@ class KhataController extends Controller
             'customer' => $customer->load('latestScore'),
             'entries' => $entries,
             'payments' => $payments,
+            'history' => $history,
+            'advance' => $this->advances->balance($customer, $storeId),
             'summary' => $this->summarise($entries),
             'exposure' => $grant ? $this->exposure->for($customer, $storeId) : null,
             'isLinked' => $customer->stores()->whereKey($storeId)->exists(),
@@ -127,11 +156,11 @@ class KhataController extends Controller
             'customer' => $selected,
             'customers' => Customer::query()
                 ->whereHas('stores', fn (Builder $q) => $q->whereKey($storeId))
-                ->whereHas('udhaars', fn (Builder $q) => $q->outstanding())
                 ->orderBy('full_name')
                 ->get(['id', 'full_name', 'mobile']),
             'openEntries' => $openEntries,
             'outstanding' => round($openEntries->sum(fn (Udhaar $u) => $u->outstandingAmount()), 2),
+            'advance' => $selected ? $this->advances->balance($selected, $storeId) : 0.0,
         ]);
     }
 
@@ -151,7 +180,7 @@ class KhataController extends Controller
             ],
         ]);
 
-        $payments = $this->ledger->receive(
+        $result = $this->ledger->receive(
             $customer,
             (float) $data['amount'],
             Carbon::parse($data['paid_on']),
@@ -161,8 +190,18 @@ class KhataController extends Controller
             isset($data['udhaar_id']) ? (int) $data['udhaar_id'] : null,
         );
 
+        $parts = [];
+        if ($result['payments']->isNotEmpty()) {
+            $parts[] = $result['payments']->count() > 1
+                ? 'applied across '.$result['payments']->count().' credit entries'
+                : 'applied to outstanding credit';
+        }
+        if ($result['advance_credited'] > 0) {
+            $parts[] = money($result['advance_credited']).' kept as advance';
+        }
+
         $message = money($data['amount']).' received'
-            .($payments->count() > 1 ? ' across '.$payments->count().' credit entries' : '')
+            .($parts !== [] ? ' ('.implode('; ', $parts).')' : '')
             .'.';
 
         return redirect()

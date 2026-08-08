@@ -8,11 +8,9 @@
     <a href="{{ route('lookup.report', $customer) }}" class="btn btn-outline-primary">
         <i class="bi bi-shield-check me-1"></i>Check GoldScore
     </a>
-    @if ($summary['outstanding'] > 0)
-        <a href="{{ route('khata.receive.customer', $customer) }}" class="btn btn-success">
-            <i class="bi bi-cash-coin me-1"></i>Received entry
-        </a>
-    @endif
+    <a href="{{ route('khata.receive.customer', $customer) }}" class="btn btn-success">
+        <i class="bi bi-cash-coin me-1"></i>Received entry
+    </a>
     @can('create', App\Models\Udhaar::class)
         <a href="{{ route('udhaars.create', ['customer' => $customer->id]) }}" class="btn btn-primary">
             <i class="bi bi-plus-lg me-1"></i>Give credit
@@ -38,9 +36,9 @@
         <div class="col-6 col-lg-3">
             <div class="card gs-stat-card h-100">
                 <div class="card-body">
-                    <div class="text-muted text-uppercase small">Credit given</div>
-                    <div class="h3 mb-0">{{ money($summary['extended']) }}</div>
-                    <div class="small text-muted">lifetime at this shop</div>
+                    <div class="text-muted text-uppercase small">Advance with you</div>
+                    <div class="h3 mb-0 {{ $advance > 0 ? 'text-success' : '' }}">{{ money($advance) }}</div>
+                    <div class="small text-muted">applied when you give credit</div>
                 </div>
             </div>
         </div>
@@ -185,14 +183,12 @@
                         <tr><th>Date</th><th>Against</th><th>Method</th><th class="text-end">Amount</th></tr>
                         </thead>
                         <tbody>
-                        @forelse ($payments as $payment)
+                        @forelse ($history as $row)
                             <tr>
-                                <td class="small">{{ $payment->paid_on->format('d M y') }}</td>
-                                <td class="small text-muted">
-                                    {{ Str::limit($payment->udhaar->item_description, 18) }}
-                                </td>
-                                <td class="small">{{ Str::headline($payment->method) }}</td>
-                                <td class="text-end text-success">{{ money($payment->amount) }}</td>
+                                <td class="small">{{ $row['paid_on']->format('d M y') }}</td>
+                                <td class="small text-muted">{{ $row['against'] }}</td>
+                                <td class="small">{{ Str::headline($row['method']) }}</td>
+                                <td class="text-end text-success">{{ money($row['amount']) }}</td>
                             </tr>
                         @empty
                             <tr><td colspan="4" class="text-center text-muted py-4">Nothing paid back yet.</td></tr>
