@@ -22,7 +22,8 @@ use Illuminate\Support\Facades\Crypt;
  */
 #[Fillable([
     'full_name', 'mobile', 'pan', 'aadhaar_last4', 'date_of_birth',
-    'address_line', 'city', 'state', 'pincode', 'created_by_store_id',
+    'address_line', 'city', 'post', 'caste', 'business_type', 'photo_path',
+    'state', 'pincode', 'created_by_store_id',
 ])]
 #[Hidden(['mobile_hash', 'pan_hash', 'aadhaar_hash'])]
 class Customer extends Model
@@ -102,8 +103,17 @@ class Customer extends Model
     {
         // Explicit table name: Laravel would otherwise infer customer_store.
         return $this->belongsToMany(Store::class, 'store_customer')
-            ->withPivot(['local_reference', 'notes', 'first_seen_at'])
+            ->withPivot(['ledger_no', 'local_reference', 'notes', 'first_seen_at'])
             ->withTimestamps();
+    }
+
+    /**
+     * The girvi ledger number is the shop's own numbering for this person, so
+     * it lives on the pivot rather than on the shared network identity.
+     */
+    public function ledgerNoFor(int $storeId): ?string
+    {
+        return $this->stores()->whereKey($storeId)->first()?->pivot?->ledger_no;
     }
 
     public function createdByStore(): BelongsTo
@@ -119,6 +129,15 @@ class Customer extends Model
     public function goldLoans(): HasMany
     {
         return $this->hasMany(GoldLoan::class);
+    }
+
+    public function businessTypeLabel(): ?string
+    {
+        return match ($this->business_type) {
+            'agriculture' => 'Agriculture',
+            'non_agriculture' => 'Non-Agriculture',
+            default => null,
+        };
     }
 
     public function defaultFlags(): HasMany

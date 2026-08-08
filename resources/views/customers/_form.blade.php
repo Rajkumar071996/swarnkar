@@ -77,6 +77,46 @@
             @error('local_reference') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
     @endempty
+
+    <div class="col-12">
+        <hr class="mt-2 mb-1">
+        <div class="text-muted small">For girvi — optional unless you pledge jewellery for this customer.</div>
+    </div>
+
+    <div class="col-md-3">
+        <label for="ledger_no" class="form-label">Ledger No</label>
+        <input type="text" id="ledger_no" name="ledger_no" value="{{ old('ledger_no', $ledgerNo ?? '') }}"
+               class="form-control @error('ledger_no') is-invalid @enderror">
+        @error('ledger_no') <div class="invalid-feedback">{{ $message }}</div> @enderror
+    </div>
+
+    <div class="col-md-3">
+        <label for="post" class="form-label">Post</label>
+        <input type="text" id="post" name="post" value="{{ old('post', $customer->post ?? '') }}"
+               class="form-control @error('post') is-invalid @enderror">
+        @error('post') <div class="invalid-feedback">{{ $message }}</div> @enderror
+    </div>
+
+    <div class="col-md-3">
+        <label for="caste" class="form-label">Caste</label>
+        <input type="text" id="caste" name="caste" value="{{ old('caste', $customer->caste ?? '') }}"
+               class="form-control @error('caste') is-invalid @enderror">
+        @error('caste') <div class="invalid-feedback">{{ $message }}</div> @enderror
+    </div>
+
+    <div class="col-md-3">
+        <label for="business_type" class="form-label">Business type</label>
+        <select id="business_type" name="business_type"
+                class="form-select @error('business_type') is-invalid @enderror">
+            <option value="">Not set</option>
+            @foreach (['agriculture' => 'Agriculture', 'non_agriculture' => 'Non-Agriculture'] as $value => $label)
+                <option value="{{ $value }}" @selected(old('business_type', $customer->business_type ?? '') === $value)>
+                    {{ $label }}
+                </option>
+            @endforeach
+        </select>
+        @error('business_type') <div class="invalid-feedback">{{ $message }}</div> @enderror
+    </div>
 </div>
 
 <div class="mt-4 d-flex gap-2">

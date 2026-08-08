@@ -5,6 +5,9 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DefaultFlagController;
+use App\Http\Controllers\Girvi\GirviDashboardController;
+use App\Http\Controllers\Girvi\GirviLoanController;
+use App\Http\Controllers\Girvi\GirviReleaseController;
 use App\Http\Controllers\LookupController;
 use App\Http\Controllers\KhataController;
 use App\Http\Controllers\StaffController;
@@ -54,6 +57,24 @@ Route::middleware(['auth', 'active'])->group(function () {
         ->name('udhaars.payments.store');
     Route::post('udhaars/{udhaar}/write-off', [UdhaarController::class, 'writeOff'])
         ->name('udhaars.write-off');
+
+    // Girvi: the pledged jewellery book, a separate module from GoldScore.
+    Route::prefix('girvi')->name('girvi.')->group(function () {
+        Route::get('/', GirviDashboardController::class)->name('dashboard');
+
+        Route::get('loans', [GirviLoanController::class, 'index'])->name('loans.index');
+        Route::get('loans/create', [GirviLoanController::class, 'create'])->name('loans.create');
+        Route::post('loans', [GirviLoanController::class, 'store'])->name('loans.store');
+        Route::get('loans/{goldLoan}', [GirviLoanController::class, 'show'])->name('loans.show');
+        Route::get('loans/{goldLoan}/receipt', [GirviLoanController::class, 'receipt'])->name('loans.receipt');
+        Route::post('loans/{goldLoan}/interest', [GirviLoanController::class, 'collectInterest'])
+            ->name('loans.interest');
+
+        Route::get('release', [GirviReleaseController::class, 'create'])->name('release.create');
+        Route::post('release/{goldLoan}', [GirviReleaseController::class, 'store'])->name('release.store');
+        Route::get('release/{goldLoan}/receipt', [GirviReleaseController::class, 'receipt'])
+            ->name('release.receipt');
+    });
 
     Route::post('customers/{customer}/flags', [DefaultFlagController::class, 'store'])->name('flags.store');
 

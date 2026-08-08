@@ -1,0 +1,210 @@
+<?php
+
+namespace Tests\Feature\Girvi;
+
+use App\Events\CustomerLedgerChanged;
+use App\Models\Customer;
+use App\Models\GoldLoan;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
+
+class GirviDepositTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private User $user;
+
+    private Customer $customer;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->user = User::factory()->owner()->create();
+        $this->customer = Customer::factory()->create();
+        $this->customer->stores()->attach($this->user->store_id, ['first_seen_at' => now()]);
+    }
+
+    #[Test]
+    public function the_entry_screen_offers_the_stores_customers(): void
+    {
+        $this->actingAs($this->user)
+            ->get(route('girvi.loans.create'))
+            ->assertOk()
+            ->assertSee('Item detail')
+            ->assertSee('Estimate in %')
+            ->assertSee($this->customer->full_name);
+    }
+
+    #[Test]
+    public function the_picker_shows_the_stores_own_ledger_number(): void
+    {
+        $this->customer->stores()->updateExistingPivot($this->user->store_id, ['ledger_no' => '171']);
+
+        $this->actingAs($this->user)
+            ->get(route('girvi.loans.create'))
+            ->assertOk()
+            ->assertSee('[171]');
+    }
+
+    #[Test]
+    public function two_stores_can_use_the_same_ledger_number(): void
+    {
+        $this->customer->stores()->updateExistingPivot($this->user->store_id, ['ledger_no' => '171']);
+
+        $other = User::factory()->owner()->create();
+        $another = Customer::factory()->create();
+        $another->stores()->attach($other->store_id, ['first_seen_at' => now(), 'ledger_no' => '171']);
+
+        $this->assertSame('171', $this->customer->ledgerNoFor($this->user->store_id));
+        $this->assertSame('171', $another->ledgerNoFor($other->store_id));
+    }
+
+    #[Test]
+    public function a_deposit_stores_the_pledge_with_the_weights_worked_out(): void
+    {
+        $this->actingAs($this->user)
+            ->post(route('girvi.loans.store'), $this->payload())
+            ->assertRedirect();
+
+        $loan = GoldLoan::query()->firstOrFail();
+
+        $this->assertSame('10.000', $loan->net_weight_grams);
+        $this->assertSame('9.160', $loan->fine_weight_grams);
+        $this->assertSame('54960.00', $loan->total_value);
+        $this->assertSame('41220.00', $loan->estimate_amount);
+        $this->assertSame('40000.00', $loan->principal_amount);
+        $this->assertSame('GRT-19/27-1', $loan->receipt_no);
+        $this->assertCount(1, $loan->items);
+        $this->assertSame($this->user->id, $loan->created_by_user_id);
+    }
+
+    #[Test]
+    public function the_maturity_date_follows_the_duration(): void
+    {
+        $this->actingAs($this->user)->post(route('girvi.loans.store'), $this->payload([
+            'disbursed_on' => '2026-01-10',
+            'duration_months' => 9,
+        ]));
+
+        $this->assertSame('2026-10-10', GoldLoan::query()->value('due_on')->toDateString());
+    }
+
+    #[Test]
+    public function the_pledge_page_and_the_dashboard_show_what_is_held(): void
+    {
+        $this->actingAs($this->user)
+            ->post(route('girvi.loans.store'), $this->payload())
+            ->assertRedirect();
+
+        $loan = GoldLoan::query()->firstOrFail();
+
+        $this->actingAs($this->user)
+            ->get(route('girvi.loans.show', $loan))
+            ->assertOk()
+            ->assertSee($this->customer->full_name)
+            ->assertSee('GRT-19/27-1')
+            ->assertSee('Chain')
+            ->assertSee('Collect interest');
+
+        $this->actingAs($this->user)
+            ->get(route('girvi.dashboard'))
+            ->assertOk()
+            ->assertSee('Money out')
+            ->assertSee('₹40,000')
+            ->assertSee('9.160 g');
+    }
+
+    #[Test]
+    public function a_loan_above_the_estimate_is_refused(): void
+    {
+        $this->actingAs($this->user)
+            ->post(route('girvi.loans.store'), $this->payload(['principal_amount' => 45000]))
+            ->assertSessionHasErrors('principal_amount');
+
+        $this->assertSame(0, GoldLoan::query()->count());
+    }
+
+    #[Test]
+    public function receipt_numbers_run_in_sequence_per_store(): void
+    {
+        $this->actingAs($this->user)->post(route('girvi.loans.store'), $this->payload());
+        $this->actingAs($this->user)->post(route('girvi.loans.store'), $this->payload());
+
+        $this->assertSame(
+            ['GRT-19/27-1', 'GRT-19/27-2'],
+            GoldLoan::query()->orderBy('id')->pluck('receipt_no')->all(),
+        );
+
+        $other = User::factory()->owner()->create();
+        $shared = Customer::factory()->create();
+        $shared->stores()->attach($other->store_id, ['first_seen_at' => now()]);
+
+        $this->actingAs($other)->post(route('girvi.loans.store'), $this->payload([
+            'customer_id' => $shared->id,
+        ]));
+
+        $this->assertSame(
+            'GRT-19/27-1',
+            GoldLoan::withoutGlobalScopes()->where('store_id', $other->store_id)->value('receipt_no'),
+        );
+    }
+
+    #[Test]
+    public function a_deposit_refreshes_the_customers_goldscore(): void
+    {
+        Event::fake([CustomerLedgerChanged::class]);
+
+        $this->actingAs($this->user)->post(route('girvi.loans.store'), $this->payload());
+
+        Event::assertDispatched(
+            CustomerLedgerChanged::class,
+            fn (CustomerLedgerChanged $event) => $event->customer->is($this->customer)
+                && $event->reason === 'girvi.deposited',
+        );
+    }
+
+    #[Test]
+    public function staff_cannot_take_a_pledge_in(): void
+    {
+        $staff = User::factory()->staff()->create(['store_id' => $this->user->store_id]);
+
+        $this->actingAs($staff)
+            ->post(route('girvi.loans.store'), $this->payload())
+            ->assertForbidden();
+    }
+
+    /**
+     * @param  array<string, mixed>  $overrides
+     * @return array<string, mixed>
+     */
+    private function payload(array $overrides = []): array
+    {
+        return array_merge([
+            'customer_id' => $this->customer->id,
+            'invoice_no' => '110489',
+            'disbursed_on' => now()->toDateString(),
+            'duration_months' => 6,
+            'loan_reason' => 'Transaction Loan',
+            'loan_type' => 'Ornaments',
+            'rate_per_gram' => 6000,
+            'estimate_percent' => 75,
+            'interest_rate' => 60,
+            'principal_amount' => 40000,
+            'items' => [
+                [
+                    'metal_type' => 'gold',
+                    'item_type' => 'Chain',
+                    'quantity' => 1,
+                    'gross_weight_grams' => 12.5,
+                    'less_weight_grams' => 2.5,
+                    'weight_percent' => 91.6,
+                    'rate_per_gram' => 6000,
+                ],
+            ],
+        ], $overrides);
+    }
+}

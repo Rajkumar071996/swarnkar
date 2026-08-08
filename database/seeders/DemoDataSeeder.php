@@ -32,6 +32,11 @@ class DemoDataSeeder extends Seeder
 
     private Carbon $today;
 
+    private int $ledgerNo = 100;
+
+    /** @var array<int, int> */
+    private array $girviSerials = [];
+
     public function run(): void
     {
         $this->today = Carbon::today();
@@ -123,6 +128,7 @@ class DemoDataSeeder extends Seeder
         $this->settledUdhaar($anita, 240000, monthsAgo: 5, daysLate: 0);
         $this->settledUdhaar($anita, 110000, monthsAgo: 16, daysLate: 0);
         $this->closedGoldLoan($anita, 180000, monthsAgo: 14);
+        $this->openGirvi($anita, 120000, monthsAgo: 3);
 
         $vikram = $this->customer('Vikram Singh Rathore', '9829100003', 'Ajmer');
         $this->settledUdhaar($vikram, 95000, monthsAgo: 4, daysLate: 0, store: $this->rivalStore);
@@ -236,7 +242,10 @@ class DemoDataSeeder extends Seeder
         $customer->pan = strtoupper(Str::random(5)).random_int(1000, 9999).strtoupper(Str::random(1));
         $customer->save();
 
-        $customer->stores()->attach($this->store->id, ['first_seen_at' => now()]);
+        $customer->stores()->attach($this->store->id, [
+            'first_seen_at' => now(),
+            'ledger_no' => (string) $this->ledgerNo++,
+        ]);
 
         return $customer;
     }
@@ -345,16 +354,11 @@ class DemoDataSeeder extends Seeder
     {
         $disbursedOn = $this->today->copy()->subMonthsNoOverflow($monthsAgo);
 
-        GoldLoan::create([
-            'store_id' => $this->store->id,
-            'customer_id' => $customer->id,
-            'loan_no' => 'GL-'.Str::upper(Str::random(8)),
-            'principal_amount' => $amount,
+        $this->girvi($customer, $this->store, $amount, $disbursedOn, [
             'interest_rate' => 11.0,
-            'pledged_weight_grams' => round($amount / 5200, 3),
-            'disbursed_on' => $disbursedOn,
-            'due_on' => $disbursedOn->copy()->addMonths(6),
             'closed_on' => $disbursedOn->copy()->addMonths(5),
+            'released_on' => $disbursedOn->copy()->addMonths(5),
+            'principal_repaid' => $amount,
             'status' => GoldLoanStatus::Closed,
         ]);
     }
@@ -363,15 +367,7 @@ class DemoDataSeeder extends Seeder
     {
         $disbursedOn = $this->today->copy()->subMonthsNoOverflow($monthsAgo);
 
-        GoldLoan::create([
-            'store_id' => $this->store->id,
-            'customer_id' => $customer->id,
-            'loan_no' => 'GL-'.Str::upper(Str::random(8)),
-            'principal_amount' => $amount,
-            'interest_rate' => 12.5,
-            'pledged_weight_grams' => round($amount / 5200, 3),
-            'disbursed_on' => $disbursedOn,
-            'due_on' => $disbursedOn->copy()->addMonths(6),
+        $this->girvi($customer, $this->store, $amount, $disbursedOn, [
             'status' => GoldLoanStatus::Renewed,
         ]);
     }
@@ -380,18 +376,85 @@ class DemoDataSeeder extends Seeder
     {
         $disbursedOn = $this->today->copy()->subMonthsNoOverflow($monthsAgo);
 
-        GoldLoan::create([
-            'store_id' => $this->rivalStore->id,
-            'customer_id' => $customer->id,
-            'loan_no' => 'GL-'.Str::upper(Str::random(8)),
-            'principal_amount' => $amount,
-            'interest_rate' => 12.5,
-            'pledged_weight_grams' => round($amount / 5200, 3),
-            'disbursed_on' => $disbursedOn,
-            'due_on' => $disbursedOn->copy()->addMonths(6),
+        $this->girvi($customer, $this->rivalStore, $amount, $disbursedOn, [
             'closed_on' => $disbursedOn->copy()->addMonths(9),
             'status' => GoldLoanStatus::Auctioned,
         ]);
+    }
+
+    /**
+     * A pledge still sitting in the shop, so the girvi dashboard has money out
+     * and metal held rather than a screen of zeros.
+     */
+    private function openGirvi(Customer $customer, float $amount, int $monthsAgo): void
+    {
+        $disbursedOn = $this->today->copy()->subMonthsNoOverflow($monthsAgo);
+
+        $this->girvi($customer, $this->store, $amount, $disbursedOn, [
+            'interest_rate' => 24.0,
+            'duration_months' => 12,
+            'due_on' => $disbursedOn->copy()->addMonths(12),
+            'status' => GoldLoanStatus::Active,
+        ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $overrides
+     */
+    private function girvi(
+        Customer $customer,
+        Store $store,
+        float $amount,
+        Carbon $disbursedOn,
+        array $overrides = [],
+    ): GoldLoan {
+        // Worked back from the loan: the shop lends 75 percent of what the fine
+        // metal is worth, so the weights follow from the amount.
+        $rate = 6500.0;
+        $totalValue = round($amount / 0.75, 2);
+        $fine = round($totalValue / $rate, 3);
+        $net = round($fine / 0.916, 3);
+        $serial = ($this->girviSerials[$store->id] ?? 0) + 1;
+        $this->girviSerials[$store->id] = $serial;
+
+        $loan = GoldLoan::create([
+            'store_id' => $store->id,
+            'customer_id' => $customer->id,
+            'loan_no' => 'GL-'.Str::upper(Str::random(8)),
+            'receipt_no' => 'GRT-'.config('girvi.receipt.book_code').'-'.$serial,
+            'principal_amount' => $amount,
+            'interest_rate' => 12.5,
+            'duration_months' => 6,
+            'gross_weight_grams' => round($net + 0.5, 3),
+            'less_weight_grams' => 0.5,
+            'net_weight_grams' => $net,
+            'fine_weight_grams' => $fine,
+            'rate_per_gram' => $rate,
+            'total_value' => $totalValue,
+            'estimate_percent' => 75,
+            'estimate_amount' => $amount,
+            'pledged_weight_grams' => $net,
+            'purity_karat' => 22,
+            'loan_type' => 'Ornaments',
+            'disbursed_on' => $disbursedOn,
+            'due_on' => $disbursedOn->copy()->addMonths(6),
+            ...$overrides,
+        ]);
+
+        $loan->items()->create([
+            'metal_type' => 'gold',
+            'item_type' => 'Necklace',
+            'quantity' => 1,
+            'gross_weight_grams' => round($net + 0.5, 3),
+            'less_weight_grams' => 0.5,
+            'net_weight_grams' => $net,
+            'weight_percent' => 91.6,
+            'fine_weight_grams' => $fine,
+            'rate_per_gram' => $rate,
+            'total_amount' => $totalValue,
+        ]);
+
+        return $loan;
     }
 
     private function flag(Customer $customer, DefaultFlagReason $reason, int $monthsAgo, float $amount, Store $store): void

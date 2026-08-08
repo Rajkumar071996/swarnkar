@@ -47,7 +47,8 @@ class CustomerController extends Controller
         $data = $request->validated();
         $aadhaar = $data['aadhaar'] ?? null;
         $localReference = $data['local_reference'] ?? null;
-        unset($data['aadhaar'], $data['local_reference']);
+        $ledgerNo = $data['ledger_no'] ?? null;
+        unset($data['aadhaar'], $data['local_reference'], $data['ledger_no']);
 
         $existing = $this->directory->findByIdentifier($data['mobile']);
 
@@ -56,9 +57,10 @@ class CustomerController extends Controller
             'created_by_store_id' => $existing?->created_by_store_id ?? $request->user()->store_id,
         ], $aadhaar);
 
-        $this->directory->linkToStore($customer, $request->user()->store_id, [
+        $this->directory->linkToStore($customer, $request->user()->store_id, array_filter([
             'local_reference' => $localReference,
-        ]);
+            'ledger_no' => $ledgerNo,
+        ]));
 
         AuditLog::record('customer.saved', $customer, ['matched_existing' => (bool) $existing]);
 
@@ -87,11 +89,14 @@ class CustomerController extends Controller
         ]);
     }
 
-    public function edit(Customer $customer): View
+    public function edit(Request $request, Customer $customer): View
     {
         $this->authorize('update', $customer);
 
-        return view('customers.edit', compact('customer'));
+        return view('customers.edit', [
+            'customer' => $customer,
+            'ledgerNo' => $customer->ledgerNoFor($request->user()->store_id),
+        ]);
     }
 
     public function update(CustomerRequest $request, Customer $customer): RedirectResponse
@@ -100,7 +105,12 @@ class CustomerController extends Controller
 
         $data = $request->validated();
         $aadhaar = $data['aadhaar'] ?? null;
-        unset($data['aadhaar'], $data['local_reference']);
+        $ledgerNo = $data['ledger_no'] ?? null;
+        unset($data['aadhaar'], $data['local_reference'], $data['ledger_no']);
+
+        $this->directory->linkToStore($customer, $request->user()->store_id, [
+            'ledger_no' => $ledgerNo,
+        ]);
 
         $customer->fill($data);
 
