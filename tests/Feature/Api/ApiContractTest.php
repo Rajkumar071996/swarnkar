@@ -198,6 +198,7 @@ class ApiContractTest extends TestCase
             ->assertJsonPath('exposure.other_store_count', 1);
 
         $this->assertStringNotContainsString('Mahalaxmi', $response->getContent());
+        $this->assertStringContainsString('XXXXX jeweller', $response->getContent());
         $this->assertStringContainsString('Ajmer', $response->getContent());
     }
 

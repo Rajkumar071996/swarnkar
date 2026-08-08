@@ -166,10 +166,9 @@ class ScoreReportTest extends TestCase
             ->get(route('lookup.report', $this->customer))
             ->assertOk();
 
-        // The address is shown so the jeweller knows where the money sits,
-        // but never which shop name it came from.
-        $response->assertSee('44 Diggi Bazaar, Ajmer, Rajasthan, 305001')
-            ->assertSee('Ajmer')
+        // Masked shop name plus address — never the real trading name.
+        $response->assertSee('XXXXX jeweller')
+            ->assertSee('44 Diggi Bazaar, Ajmer, Rajasthan, 305001')
             ->assertDontSee('Mahalaxmi Jewellers');
     }
 

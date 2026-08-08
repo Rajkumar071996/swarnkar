@@ -69,7 +69,7 @@ class CreditExposure
                 // address is shown so the counter knows where the money sits.
                 'label' => $isOwnStore
                     ? 'Your store'
-                    : ($store?->anonymisedLabel() ?? 'Another jeweller'),
+                    : ($store?->anonymisedLabel() ?? 'XXXXX jeweller'),
                 'address' => $store?->fullAddress(),
                 'outstanding' => 0.0,
                 'overdue' => 0.0,

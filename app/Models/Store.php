@@ -28,12 +28,13 @@ class Store extends Model
     }
 
     /**
-     * How this store is described in a cross-store report. Trading names are
-     * withheld so a lookup cannot be used to map a competitor's customer book.
+     * How this store is described in a cross-store report. The brand is masked
+     * so a lookup cannot be used to map a competitor's customer book; the
+     * street address is shown separately for location.
      */
     public function anonymisedLabel(): string
     {
-        return trim(sprintf('A jeweller in %s, %s', $this->city, $this->state), ' ,');
+        return 'XXXXX jeweller';
     }
 
     public function fullAddress(): ?string
