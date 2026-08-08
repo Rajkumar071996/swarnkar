@@ -35,6 +35,27 @@ class GirviModuleShellTest extends TestCase
     }
 
     #[Test]
+    public function the_shared_customer_screens_stay_in_whichever_module_you_came_from(): void
+    {
+        $user = User::factory()->owner()->create();
+
+        $this->actingAs($user)->get(route('girvi.dashboard'))->assertOk();
+
+        $this->actingAs($user)->get(route('customers.index'))
+            ->assertOk()
+            ->assertSee('All Mortgage')
+            ->assertDontSee('Udhar Khata');
+
+        // Back through a GoldScore screen and the customer list follows.
+        $this->actingAs($user)->get(route('dashboard'))->assertOk();
+
+        $this->actingAs($user)->get(route('customers.index'))
+            ->assertOk()
+            ->assertSee('Udhar Khata')
+            ->assertDontSee('All Mortgage');
+    }
+
+    #[Test]
     public function both_menus_offer_the_switcher_to_the_other_module(): void
     {
         $user = User::factory()->owner()->create();

@@ -1,4 +1,4 @@
-@php $isGirvi = request()->routeIs('girvi.*'); @endphp
+@php $isGirvi = ($activeModule ?? 'goldscore') === 'girvi'; @endphp
 
 @include('partials.module-switcher', ['isGirvi' => $isGirvi])
 

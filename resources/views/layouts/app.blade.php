@@ -9,7 +9,7 @@
 </head>
 <body>
 @php
-    $isGirvi = request()->routeIs('girvi.*');
+    $isGirvi = ($activeModule ?? 'goldscore') === 'girvi';
     $moduleName = $isGirvi ? 'Girvi' : 'GoldScore';
     $moduleIcon = $isGirvi ? 'safe' : 'gem';
     $moduleHome = $isGirvi ? route('girvi.dashboard') : route('dashboard');
