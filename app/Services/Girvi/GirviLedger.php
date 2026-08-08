@@ -53,9 +53,13 @@ class GirviLedger
         $disbursedOn = Carbon::parse($attributes['disbursed_on']);
         $durationMonths = (int) ($attributes['duration_months'] ?? config('girvi.duration_months'));
 
+        // A pledge can mix gold and silver, so the headline rate and purity on
+        // the loan follow the item carrying the most fine weight.
+        $heaviest = collect($priced['items'])->sortByDesc('fine_weight_grams')->first();
+
         return DB::transaction(function () use (
             $attributes, $priced, $estimatePercent, $estimateAmount,
-            $principal, $disbursedOn, $durationMonths, $user
+            $principal, $disbursedOn, $durationMonths, $heaviest, $user
         ) {
             $loan = GoldLoan::create([
                 'store_id' => $user->store_id,
@@ -72,13 +76,13 @@ class GirviLedger
                 'less_weight_grams' => $priced['less_weight_grams'],
                 'net_weight_grams' => $priced['net_weight_grams'],
                 'fine_weight_grams' => $priced['fine_weight_grams'],
-                'rate_per_gram' => $attributes['rate_per_gram'] ?? 0,
+                'rate_per_gram' => $heaviest['rate_per_gram'],
                 'total_value' => $priced['total_value'],
                 'estimate_percent' => $estimatePercent,
                 'estimate_amount' => $estimateAmount,
                 // Kept in step with the scoring columns that predate the module.
                 'pledged_weight_grams' => $priced['net_weight_grams'],
-                'purity_karat' => $this->karatFromItems($priced['items']),
+                'purity_karat' => (int) round((float) $heaviest['weight_percent'] / 100 * 24),
                 'loan_reason' => $attributes['loan_reason'] ?? null,
                 'loan_type' => $attributes['loan_type'] ?? null,
                 'refer_by' => $attributes['refer_by'] ?? null,
@@ -197,17 +201,4 @@ class GirviLedger
         });
     }
 
-    /**
-     * The scoring tables predate the module and still speak in karat, so the
-     * heaviest item's purity is carried across.
-     *
-     * @param  array<int, array<string, mixed>>  $items
-     */
-    private function karatFromItems(array $items): int
-    {
-        $heaviest = collect($items)->sortByDesc('fine_weight_grams')->first();
-        $percent = (float) ($heaviest['weight_percent'] ?? 100);
-
-        return (int) round($percent / 100 * 24);
-    }
 }

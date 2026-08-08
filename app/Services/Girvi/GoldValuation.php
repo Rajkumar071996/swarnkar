@@ -58,12 +58,20 @@ class GoldValuation
             ];
         }
 
+        $fineByMetal = [];
+
+        foreach ($items as $item) {
+            $metal = $item['metal_type'];
+            $fineByMetal[$metal] = round(($fineByMetal[$metal] ?? 0) + $item['fine_weight_grams'], 3);
+        }
+
         return [
             'items' => $items,
             'gross_weight_grams' => round(array_sum(array_column($items, 'gross_weight_grams')), 3),
             'less_weight_grams' => round(array_sum(array_column($items, 'less_weight_grams')), 3),
             'net_weight_grams' => round(array_sum(array_column($items, 'net_weight_grams')), 3),
             'fine_weight_grams' => round(array_sum(array_column($items, 'fine_weight_grams')), 3),
+            'fine_by_metal' => $fineByMetal,
             'total_value' => round(array_sum(array_column($items, 'total_amount')), 2),
         ];
     }

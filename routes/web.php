@@ -8,6 +8,7 @@ use App\Http\Controllers\DefaultFlagController;
 use App\Http\Controllers\Girvi\GirviDashboardController;
 use App\Http\Controllers\Girvi\GirviLoanController;
 use App\Http\Controllers\Girvi\GirviReleaseController;
+use App\Http\Controllers\Girvi\GirviSettingsController;
 use App\Http\Controllers\LookupController;
 use App\Http\Controllers\KhataController;
 use App\Http\Controllers\StaffController;
@@ -74,6 +75,9 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('release/{goldLoan}', [GirviReleaseController::class, 'store'])->name('release.store');
         Route::get('release/{goldLoan}/receipt', [GirviReleaseController::class, 'receipt'])
             ->name('release.receipt');
+
+        Route::get('settings', [GirviSettingsController::class, 'edit'])->name('settings.edit');
+        Route::put('settings/rates', [GirviSettingsController::class, 'update'])->name('settings.rates');
     });
 
     Route::post('customers/{customer}/flags', [DefaultFlagController::class, 'store'])->name('flags.store');

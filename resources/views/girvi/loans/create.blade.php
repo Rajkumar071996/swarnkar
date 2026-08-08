@@ -112,23 +112,46 @@
                                 </select>
                             </div>
 
-                            <div class="col-6">
-                                <label for="rate_per_gram" class="form-label">Rate per gram</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">₹</span>
-                                    <input type="number" step="0.01" min="0" id="rate_per_gram" name="rate_per_gram"
-                                           value="{{ old('rate_per_gram', config('girvi.rate_per_gram.gold')) }}"
-                                           class="form-control @error('rate_per_gram') is-invalid @enderror" required>
-                                </div>
-                                @error('rate_per_gram') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                <div class="form-text">Applied to new item rows.</div>
-                            </div>
-                            <div class="col-6">
+                            <div class="col-12">
                                 <label for="interest_rate" class="form-label">Interest in % (per year)</label>
                                 <input type="number" step="0.01" min="0" id="interest_rate" name="interest_rate"
                                        value="{{ old('interest_rate', config('girvi.interest_rate')) }}"
                                        class="form-control @error('interest_rate') is-invalid @enderror" required>
                                 @error('interest_rate') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+
+                            <div class="col-12">
+                                <div class="border rounded p-2 bg-light">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="small fw-semibold">Today's rate per gram</span>
+                                        @can('create', App\Models\GoldLoan::class)
+                                            <a href="{{ route('girvi.settings.edit') }}" class="small">Change</a>
+                                        @endcan
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <label for="goldRate" class="form-label small mb-1">Gold</label>
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text">₹</span>
+                                                <input type="number" step="0.01" min="0" id="goldRate"
+                                                       value="{{ $rates['gold'] }}" class="form-control js-metal-rate"
+                                                       data-metal="gold">
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <label for="silverRate" class="form-label small mb-1">Silver</label>
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text">₹</span>
+                                                <input type="number" step="0.01" min="0" id="silverRate"
+                                                       value="{{ $rates['silver'] }}" class="form-control js-metal-rate"
+                                                       data-metal="silver">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-text mt-1">
+                                        Filled into each item row from its metal. Editing here only affects this entry.
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

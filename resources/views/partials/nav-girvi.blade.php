@@ -48,5 +48,11 @@
                 <i class="bi bi-person-badge me-2"></i>Staff
             </a>
         </li>
+        <li class="nav-item">
+            <a href="{{ route('girvi.settings.edit') }}" class="nav-link @active('girvi.settings.*')"
+               @if (! empty($dismissOffcanvas)) data-bs-dismiss="offcanvas" @endif>
+                <i class="bi bi-sliders me-2"></i>Settings
+            </a>
+        </li>
     @endcan
 </ul>

@@ -6,17 +6,22 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\GoldLoan;
 use App\Services\Girvi\GirviLedger;
+use App\Services\Girvi\MetalRates;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class GirviLoanController extends Controller
 {
-    public function __construct(private readonly GirviLedger $ledger) {}
+    public function __construct(
+        private readonly GirviLedger $ledger,
+        private readonly MetalRates $rates,
+    ) {}
 
     public function index(Request $request): View
     {
@@ -54,6 +59,7 @@ class GirviLoanController extends Controller
         return view('girvi.loans.create', [
             'customers' => $this->storeCustomers($request),
             'selectedCustomer' => $request->integer('customer') ?: null,
+            'rates' => $this->rates->current($request->user()->store_id),
         ]);
     }
 
@@ -70,14 +76,13 @@ class GirviLoanController extends Controller
             'duration_months' => ['required', 'integer', 'min:1', 'max:120'],
             'loan_reason' => ['nullable', 'string', 'max:64'],
             'loan_type' => ['nullable', 'string', 'max:64'],
-            'rate_per_gram' => ['required', 'numeric', 'min:0', 'max:9999999'],
             'estimate_percent' => ['required', 'numeric', 'min:1', 'max:100'],
             'interest_rate' => ['required', 'numeric', 'min:0', 'max:200'],
             'principal_amount' => ['required', 'numeric', 'min:1', 'max:99999999'],
             'refer_by' => ['nullable', 'string', 'max:128'],
             'narration' => ['nullable', 'string', 'max:1000'],
             'items' => ['required', 'array', 'min:1'],
-            'items.*.metal_type' => ['required', 'string', 'max:32'],
+            'items.*.metal_type' => ['required', Rule::in(array_keys(config('girvi.metal_types')))],
             'items.*.item_type' => ['required', 'string', 'max:64'],
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:999'],
             'items.*.gross_weight_grams' => ['required', 'numeric', 'min:0.001', 'max:99999'],
