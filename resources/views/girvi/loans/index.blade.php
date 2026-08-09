@@ -2,7 +2,13 @@
 
 @section('title', 'All Mortgage')
 @section('heading', 'All Mortgage')
-@section('subheading', money($totals['money_out']) . ' out against ' . number_format($totals['fine_weight'], 3) . ' g fine weight')
+@php
+    $heldParts = collect($totals['held'])
+        ->filter(fn (float $grams) => $grams > 0)
+        ->map(fn (float $grams, string $metal) => number_format($grams, 3) . ' g ' . $metal);
+@endphp
+
+@section('subheading', money($totals['money_out']) . ' out' . ($heldParts->isEmpty() ? '' : ' against ' . $heldParts->join(' and ')))
 
 @section('actions')
     <a href="{{ route('girvi.loans.create') }}" class="btn btn-primary">

@@ -5,6 +5,7 @@ namespace Tests\Feature\Girvi;
 use App\Events\CustomerLedgerChanged;
 use App\Models\Customer;
 use App\Models\GoldLoan;
+use App\Models\GoldLoanItem;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
@@ -116,6 +117,54 @@ class GirviDepositTest extends TestCase
             ->assertSee('Money out')
             ->assertSee('₹40,000')
             ->assertSee('9.160 g');
+    }
+
+    #[Test]
+    public function gold_and_silver_are_counted_separately_in_what_is_held(): void
+    {
+        $this->actingAs($this->user)->post(route('girvi.loans.store'), $this->payload([
+            'items' => [
+                [
+                    'metal_type' => 'gold', 'item_type' => 'Chain', 'quantity' => 1,
+                    'gross_weight_grams' => 12.5, 'less_weight_grams' => 2.5,
+                    'weight_percent' => 91.6, 'rate_per_gram' => 6000,
+                ],
+                [
+                    'metal_type' => 'silver', 'item_type' => 'Anklet', 'quantity' => 2,
+                    'gross_weight_grams' => 100, 'less_weight_grams' => 0,
+                    'weight_percent' => 90, 'rate_per_gram' => 90,
+                ],
+            ],
+            'principal_amount' => 40000,
+        ]));
+
+        $this->assertSame(
+            ['gold' => 9.16, 'silver' => 90.0],
+            GoldLoanItem::fineWeightHeld(),
+        );
+
+        $this->actingAs($this->user)
+            ->get(route('girvi.dashboard'))
+            ->assertOk()
+            ->assertSee('Gold held')
+            ->assertSee('9.160 g')
+            ->assertSee('Silver held')
+            ->assertSee('90.000 g');
+    }
+
+    #[Test]
+    public function released_metal_stops_counting_as_held(): void
+    {
+        $this->actingAs($this->user)->post(route('girvi.loans.store'), $this->payload());
+
+        $this->assertSame(9.16, GoldLoanItem::fineWeightHeld()['gold']);
+
+        $this->actingAs($this->user)->post(
+            route('girvi.release.store', GoldLoan::query()->firstOrFail()),
+            ['released_on' => now()->toDateString()],
+        );
+
+        $this->assertSame(0.0, GoldLoanItem::fineWeightHeld()['gold']);
     }
 
     #[Test]

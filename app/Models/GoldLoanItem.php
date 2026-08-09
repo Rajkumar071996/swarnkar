@@ -31,4 +31,28 @@ class GoldLoanItem extends Model
     {
         return $this->belongsTo(GoldLoan::class);
     }
+
+    /**
+     * Fine metal sitting in the shop right now, split by metal. Gold and silver
+     * are worth an order of magnitude apart, so a single combined weight tells
+     * the owner very little about what is actually in the safe.
+     *
+     * @return array<string, float>
+     */
+    public static function fineWeightHeld(): array
+    {
+        $held = static::query()
+            ->whereIn('gold_loan_id', GoldLoan::query()->unreleased()->select('id'))
+            ->groupBy('metal_type')
+            ->selectRaw('metal_type, SUM(fine_weight_grams) AS fine')
+            ->pluck('fine', 'metal_type');
+
+        $weights = [];
+
+        foreach (array_keys(config('girvi.metal_types')) as $metal) {
+            $weights[$metal] = round((float) ($held[$metal] ?? 0), 3);
+        }
+
+        return $weights;
+    }
 }

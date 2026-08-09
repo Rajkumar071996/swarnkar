@@ -19,7 +19,8 @@
             ['label' => 'Money out', 'value' => money($stats['money_out']), 'icon' => 'cash-stack', 'tone' => '', 'hint' => 'On unreleased pledges'],
             ['label' => 'Pledges held', 'value' => $stats['pledges'], 'icon' => 'safe', 'tone' => '', 'hint' => null],
             ['label' => 'Overdue', 'value' => $stats['overdue'], 'icon' => 'exclamation-triangle', 'tone' => $stats['overdue'] > 0 ? 'text-danger' : '', 'hint' => 'Past maturity'],
-            ['label' => 'Fine weight held', 'value' => number_format($stats['fine_weight'], 3) . ' g', 'icon' => 'gem', 'tone' => '', 'hint' => null],
+            ['label' => 'Gold held', 'value' => number_format($stats['held']['gold'], 3) . ' g', 'icon' => 'gem', 'tone' => 'text-warning', 'hint' => 'Fine weight'],
+            ['label' => 'Silver held', 'value' => number_format($stats['held']['silver'], 3) . ' g', 'icon' => 'circle', 'tone' => 'text-secondary', 'hint' => 'Fine weight'],
             ['label' => 'Interest this month', 'value' => money($stats['interest_this_month']), 'icon' => 'graph-up', 'tone' => 'text-success', 'hint' => null],
             ['label' => 'Released', 'value' => $stats['released'], 'icon' => 'unlock', 'tone' => '', 'hint' => 'All time'],
         ] as $card)

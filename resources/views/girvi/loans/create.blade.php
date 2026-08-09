@@ -256,7 +256,7 @@
     <template id="itemRowTemplate">
         <tr class="gs-item-row">
             <td>
-                <select name="items[__INDEX__][metal_type]" class="form-select form-select-sm">
+                <select name="items[__INDEX__][metal_type]" class="form-select form-select-sm js-metal">
                     @foreach (config('girvi.metal_types') as $value => $label)
                         <option value="{{ $value }}">{{ $label }}</option>
                     @endforeach
@@ -294,7 +294,6 @@
         (function () {
             const body = document.getElementById('itemsBody');
             const template = document.getElementById('itemRowTemplate');
-            const defaultRate = document.getElementById('rate_per_gram');
             const estimatePercent = document.getElementById('estimate_percent');
             const principal = document.getElementById('principal_amount');
             const duration = document.getElementById('duration_months');
@@ -303,6 +302,26 @@
 
             const round = (value, places) => Number.isFinite(value) ? value.toFixed(places) : (0).toFixed(places);
             const num = (input) => parseFloat(input.value) || 0;
+
+            const metalRates = {};
+            document.querySelectorAll('.js-metal-rate').forEach((input) => {
+                metalRates[input.dataset.metal] = input;
+            });
+
+            /**
+             * Rows take today's rate for whichever metal they are, unless the
+             * counter has typed over it for this one item.
+             */
+            function applyMetalRate(row) {
+                const rate = row.querySelector('.js-rate');
+
+                if (rate.dataset.touched === 'true') {
+                    return;
+                }
+
+                const source = metalRates[row.querySelector('.js-metal').value];
+                rate.value = source ? source.value : '';
+            }
 
             function recalcRow(row) {
                 const net = Math.max(0, num(row.querySelector('.js-gross')) - num(row.querySelector('.js-less')));
@@ -356,13 +375,27 @@
                 holder.innerHTML = markup.trim();
                 const row = holder.firstElementChild;
 
-                row.querySelector('.js-rate').value = defaultRate.value;
+                const rate = row.querySelector('.js-rate');
+
+                rate.addEventListener('input', () => {
+                    rate.dataset.touched = 'true';
+                });
+
+                // Switching metal always re-prices the row, even if the rate
+                // was typed over for the metal it used to be.
+                row.querySelector('.js-metal').addEventListener('change', () => {
+                    delete rate.dataset.touched;
+                    applyMetalRate(row);
+                    recalcTotals();
+                });
+
                 row.querySelector('.js-remove').addEventListener('click', () => {
                     row.remove();
                     recalcTotals();
                 });
                 row.addEventListener('input', recalcTotals);
 
+                applyMetalRate(row);
                 body.appendChild(row);
                 recalcTotals();
             }
@@ -372,6 +405,13 @@
 
                 document.querySelectorAll('#customer_id option').forEach((option) => {
                     option.hidden = needle !== '' && !option.dataset.search.includes(needle);
+                });
+            });
+
+            Object.values(metalRates).forEach((input) => {
+                input.addEventListener('input', () => {
+                    body.querySelectorAll('.gs-item-row').forEach(applyMetalRate);
+                    recalcTotals();
                 });
             });
 

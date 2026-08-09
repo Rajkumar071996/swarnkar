@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Girvi;
 
 use App\Http\Controllers\Controller;
 use App\Models\GoldLoan;
+use App\Models\GoldLoanItem;
 use App\Models\GoldLoanPayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -42,9 +43,7 @@ class GirviDashboardController extends Controller
                     ->value('total'),
                 'pledges' => (clone $unreleased)->count(),
                 'overdue' => GoldLoan::query()->overdue()->count(),
-                'fine_weight' => (float) (clone $unreleased)
-                    ->selectRaw('COALESCE(SUM(fine_weight_grams), 0) AS total')
-                    ->value('total'),
+                'held' => GoldLoanItem::fineWeightHeld(),
                 'interest_this_month' => (float) GoldLoanPayment::query()
                     ->where('type', 'interest')
                     ->whereBetween('paid_on', [$today->copy()->startOfMonth(), $today->copy()->endOfMonth()])

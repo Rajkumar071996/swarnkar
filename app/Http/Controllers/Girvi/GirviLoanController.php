@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Girvi;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\GoldLoan;
+use App\Models\GoldLoanItem;
 use App\Services\Girvi\GirviLedger;
 use App\Services\Girvi\MetalRates;
 use Illuminate\Database\Eloquent\Builder;
@@ -45,9 +46,7 @@ class GirviLoanController extends Controller
                 'money_out' => (float) GoldLoan::query()->unreleased()
                     ->selectRaw('COALESCE(SUM(principal_amount - principal_repaid), 0) AS total')
                     ->value('total'),
-                'fine_weight' => (float) GoldLoan::query()->unreleased()
-                    ->selectRaw('COALESCE(SUM(fine_weight_grams), 0) AS total')
-                    ->value('total'),
+                'held' => GoldLoanItem::fineWeightHeld(),
             ],
         ]);
     }
