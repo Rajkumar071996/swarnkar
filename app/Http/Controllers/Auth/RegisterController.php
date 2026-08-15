@@ -75,6 +75,7 @@ class RegisterController extends Controller
                 'opening_capital' => $capital,
                 'cash_in_hand' => $cash,
                 'bank_balance' => $bank,
+                'books_set_at' => now(),
             ]);
 
             $user = User::create([

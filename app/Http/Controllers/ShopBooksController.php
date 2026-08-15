@@ -10,6 +10,7 @@ use App\Services\StoreBooks;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
@@ -76,10 +77,18 @@ class ShopBooksController extends Controller
         ]);
 
         $store = $request->user()->store;
+
+        if ($store->openingBooksAreSet()) {
+            throw ValidationException::withMessages([
+                'opening_capital' => 'Opening books can only be set once.',
+            ]);
+        }
+
         $store->forceFill([
             'opening_capital' => round((float) $data['opening_capital'], 2),
             'cash_in_hand' => round((float) $data['cash_in_hand'], 2),
             'bank_balance' => round((float) $data['bank_balance'], 2),
+            'books_set_at' => now(),
         ])->save();
 
         AuditLog::record('books.updated', $store, [

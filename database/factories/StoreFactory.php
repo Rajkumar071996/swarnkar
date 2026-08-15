@@ -36,6 +36,7 @@ class StoreFactory extends Factory
             'opening_capital' => 1000000,
             'cash_in_hand' => 400000,
             'bank_balance' => 600000,
+            'books_set_at' => now(),
         ];
     }
 }

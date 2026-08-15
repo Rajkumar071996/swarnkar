@@ -15,7 +15,7 @@ class Store extends Model
     protected $fillable = [
         'name', 'legal_name', 'gstin', 'phone', 'email',
         'address_line', 'city', 'state', 'pincode', 'is_active',
-        'opening_capital', 'cash_in_hand', 'bank_balance',
+        'opening_capital', 'cash_in_hand', 'bank_balance', 'books_set_at',
     ];
 
     protected function casts(): array
@@ -25,7 +25,13 @@ class Store extends Model
             'opening_capital' => 'decimal:2',
             'cash_in_hand' => 'decimal:2',
             'bank_balance' => 'decimal:2',
+            'books_set_at' => 'datetime',
         ];
+    }
+
+    public function openingBooksAreSet(): bool
+    {
+        return $this->books_set_at !== null;
     }
 
     public function users(): HasMany

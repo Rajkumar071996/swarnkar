@@ -98,9 +98,15 @@ class ShopBooksTest extends TestCase
     }
 
     #[Test]
-    public function the_owner_can_correct_the_opening_books(): void
+    public function the_owner_can_correct_the_opening_books_once(): void
     {
         $user = User::factory()->owner()->create();
+        $user->store->forceFill(['books_set_at' => null])->save();
+
+        $this->actingAs($user)
+            ->get(route('books.index'))
+            ->assertOk()
+            ->assertSee('Correct the books');
 
         $this->actingAs($user)
             ->put(route('books.update'), [
@@ -115,6 +121,41 @@ class ShopBooksTest extends TestCase
         $this->assertSame('2000000.00', $user->store->opening_capital);
         $this->assertSame('750000.00', $user->store->cash_in_hand);
         $this->assertSame('1250000.00', $user->store->bank_balance);
+        $this->assertNotNull($user->store->books_set_at);
+
+        $this->actingAs($user)
+            ->put(route('books.update'), [
+                'opening_capital' => 1,
+                'cash_in_hand' => 1,
+                'bank_balance' => 0,
+            ])
+            ->assertSessionHasErrors('opening_capital');
+
+        $this->assertSame('2000000.00', $user->store->fresh()->opening_capital);
+
+        $this->actingAs($user)
+            ->get(route('books.index'))
+            ->assertOk()
+            ->assertDontSee('Correct the books');
+    }
+
+    #[Test]
+    public function a_shop_that_set_books_at_signup_cannot_correct_them_again(): void
+    {
+        $user = User::factory()->owner()->create();
+
+        $this->actingAs($user)
+            ->get(route('books.index'))
+            ->assertOk()
+            ->assertDontSee('Correct the books');
+
+        $this->actingAs($user)
+            ->put(route('books.update'), [
+                'opening_capital' => 1,
+                'cash_in_hand' => 1,
+                'bank_balance' => 0,
+            ])
+            ->assertSessionHasErrors('opening_capital');
     }
 
     #[Test]
