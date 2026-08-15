@@ -36,7 +36,6 @@
 </header>
 
 <div id="gsMobileNav" class="gs-mobile-nav">
-    <a href="#gsMain" class="gs-drawer-backdrop" aria-label="Close menu"></a>
     <nav class="gs-offcanvas" aria-labelledby="gsMobileNavLabel">
         <div class="offcanvas-header border-bottom border-secondary">
             <h2 class="offcanvas-title h5 text-white mb-0" id="gsMobileNavLabel">
@@ -45,7 +44,7 @@
             <a href="#gsMain" class="btn-close btn-close-white m-0" aria-label="Close"></a>
         </div>
         <div class="offcanvas-body d-flex flex-column p-3">
-            @include('partials.nav-links', ['dismissOffcanvas' => true])
+            @include('partials.nav-links')
 
             <hr class="text-secondary">
 
@@ -63,6 +62,7 @@
             </form>
         </div>
     </nav>
+    <a href="#gsMain" class="gs-drawer-backdrop" aria-label="Close menu"></a>
 </div>
 
 <div class="container-fluid">

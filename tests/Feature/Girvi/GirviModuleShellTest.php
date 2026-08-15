@@ -56,6 +56,17 @@ class GirviModuleShellTest extends TestCase
     }
 
     #[Test]
+    public function the_mobile_menu_links_keep_their_real_urls(): void
+    {
+        $this->actingAs(User::factory()->owner()->create())
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('id="gsMobileNav"', false)
+            ->assertSee('href="'.route('customers.index').'"', false)
+            ->assertDontSee('data-bs-dismiss="offcanvas"', false);
+    }
+
+    #[Test]
     public function both_menus_offer_the_switcher_to_the_other_module(): void
     {
         $user = User::factory()->owner()->create();

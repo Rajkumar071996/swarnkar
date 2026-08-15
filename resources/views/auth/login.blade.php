@@ -2,7 +2,28 @@
 
 @section('title', 'Sign in')
 
+@section('banner')
+    <div class="gs-login-banner-inner">
+        <div class="gs-login-kicker">
+            <i class="bi bi-gem me-2"></i>GoldScore &middot; Girvi
+        </div>
+        <h1 class="gs-login-title">Gold Loan software for jewellers</h1>
+        <p class="gs-login-lead">
+            Business digital banao — girvi, udhaar khata and GoldScore in one shop counter.
+        </p>
+
+        <ul class="gs-login-points">
+            <li><i class="bi bi-shield-check"></i>Secure handling of pledges</li>
+            <li><i class="bi bi-lightning-charge"></i>Fast disbursement and release</li>
+            <li><i class="bi bi-graph-up-arrow"></i>Real-time books and GoldScore</li>
+        </ul>
+    </div>
+@endsection
+
 @section('content')
+    <h2 class="h4 mb-1">Sign in</h2>
+    <p class="text-muted mb-4">Use the shop owner's mobile number.</p>
+
     <form method="POST" action="{{ route('login.store') }}">
         @csrf
 
@@ -27,7 +48,7 @@
             @enderror
         </div>
 
-        <div class="form-check mb-3">
+        <div class="form-check mb-4">
             <input type="checkbox" class="form-check-input" id="remember" name="remember" value="1">
             <label class="form-check-label" for="remember">Keep me signed in</label>
         </div>
