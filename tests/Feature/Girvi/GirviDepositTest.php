@@ -67,11 +67,12 @@ class GirviDepositTest extends TestCase
     #[Test]
     public function a_deposit_stores_the_pledge_with_the_weights_worked_out(): void
     {
-        $this->actingAs($this->user)
-            ->post(route('girvi.loans.store'), $this->payload())
-            ->assertRedirect();
+        $response = $this->actingAs($this->user)
+            ->post(route('girvi.loans.store'), $this->payload());
 
         $loan = GoldLoan::query()->firstOrFail();
+
+        $response->assertRedirect(route('girvi.loans.receipt', $loan));
 
         $this->assertSame('10.000', $loan->net_weight_grams);
         $this->assertSame('9.160', $loan->fine_weight_grams);
@@ -104,11 +105,24 @@ class GirviDepositTest extends TestCase
         $loan = GoldLoan::query()->firstOrFail();
 
         $this->actingAs($this->user)
+            ->get(route('girvi.loans.index'))
+            ->assertOk()
+            ->assertSee('Receipt');
+
+        $this->actingAs($this->user)
+            ->get(route('girvi.loans.receipt', $loan))
+            ->assertOk()
+            ->assertSee('Print Receipt')
+            ->assertSee($this->customer->full_name)
+            ->assertSee('Gold-Chain');
+
+        $this->actingAs($this->user)
             ->get(route('girvi.loans.show', $loan))
             ->assertOk()
             ->assertSee($this->customer->full_name)
             ->assertSee('GRT-19/27-1')
             ->assertSee('Chain')
+            ->assertSee('Print Receipt')
             ->assertSee('Collect interest');
 
         $this->actingAs($this->user)

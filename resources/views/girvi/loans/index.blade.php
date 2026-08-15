@@ -44,6 +44,7 @@
                     <th class="text-end">Loan</th>
                     <th class="text-end">Outstanding</th>
                     <th>Status</th>
+                    <th></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -69,10 +70,15 @@
                                 <span class="badge {{ $loan->status->badgeClass() }}">{{ $loan->status->label() }}</span>
                             @endif
                         </td>
+                        <td class="text-end">
+                            <a href="{{ route('girvi.loans.receipt', $loan) }}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-printer me-1"></i>Receipt
+                            </a>
+                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="text-center text-muted py-5">
+                        <td colspan="9" class="text-center text-muted py-5">
                             Nothing here yet.
                             <a href="{{ route('girvi.loans.create') }}">Record a girvi</a>.
                         </td>

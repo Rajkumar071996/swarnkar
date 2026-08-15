@@ -5,8 +5,8 @@
 @section('subheading', 'Girvi ' . $loan->receipt_no . ' · ' . $loan->status->label())
 
 @section('actions')
-    <a href="{{ route('girvi.loans.receipt', $loan) }}" class="btn btn-outline-primary">
-        <i class="bi bi-printer me-1"></i>Girvi receipt
+    <a href="{{ route('girvi.loans.receipt', $loan) }}" class="btn btn-primary">
+        <i class="bi bi-printer me-1"></i>Print Receipt
     </a>
     @if (! $loan->isReleased())
         @can('release', $loan)

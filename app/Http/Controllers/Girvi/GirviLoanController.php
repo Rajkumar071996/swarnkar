@@ -94,8 +94,8 @@ class GirviLoanController extends Controller
         $loan = $this->ledger->deposit($data, $data['items'], $request->user());
 
         return redirect()
-            ->route('girvi.loans.show', $loan)
-            ->with('success', 'Girvi '.$loan->receipt_no.' recorded for '.money($loan->principal_amount).'.');
+            ->route('girvi.loans.receipt', $loan)
+            ->with('success', 'Girvi '.$loan->receipt_no.' recorded. Print the receipt for the customer.');
     }
 
     public function show(GoldLoan $goldLoan): View
@@ -111,7 +111,7 @@ class GirviLoanController extends Controller
     {
         $this->authorize('view', $goldLoan);
 
-        $goldLoan->load(['customer', 'items']);
+        $goldLoan->load(['customer', 'items', 'store']);
 
         return view('girvi.loans.receipt', ['loan' => $goldLoan]);
     }

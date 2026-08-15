@@ -209,8 +209,12 @@ class GirviReleaseTest extends TestCase
         $this->actingAs($this->user)
             ->get(route('girvi.loans.receipt', $this->loan))
             ->assertOk()
-            ->assertSee('Girvi Receipt')
+            ->assertSee($this->customer->full_name)
             ->assertSee('GRT-19/27-1')
-            ->assertSee('Chain');
+            ->assertSee('Gold-Chain')
+            ->assertSee('Customer Name')
+            ->assertSee('Predicted Value')
+            ->assertSee('Print Receipt')
+            ->assertSee('we will not take any responsibility if the receipt is lost');
     }
 }
