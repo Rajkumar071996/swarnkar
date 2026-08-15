@@ -1,5 +1,5 @@
 @php
-    $books = $books ?? ['capital' => 0, 'cash' => 0, 'bank' => 0, 'expenses' => 0];
+    $books = $books ?? ['capital' => 0, 'cash' => 0, 'bank' => 0, 'income' => 0, 'expenses' => 0];
 @endphp
 
 <div class="row g-3 mb-4">
@@ -7,9 +7,10 @@
         ['label' => 'Capital', 'value' => money($books['capital']), 'icon' => 'piggy-bank', 'tone' => '', 'hint' => 'Started with'],
         ['label' => 'Cash in hand', 'value' => money($books['cash']), 'icon' => 'cash', 'tone' => '', 'hint' => 'Till'],
         ['label' => 'Bank', 'value' => money($books['bank']), 'icon' => 'bank', 'tone' => '', 'hint' => 'In the account'],
+        ['label' => 'Income', 'value' => money($books['income']), 'icon' => 'arrow-down-circle', 'tone' => $books['income'] > 0 ? 'text-success' : '', 'hint' => 'Came in'],
         ['label' => 'Expenses', 'value' => money($books['expenses']), 'icon' => 'receipt', 'tone' => $books['expenses'] > 0 ? 'text-danger' : '', 'hint' => 'Paid out'],
     ] as $card)
-        <div class="col-6 col-md-3">
+        <div class="col-6 col-md">
             <div class="card gs-stat-card h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
@@ -27,7 +28,7 @@
 @can('manageStaff', App\Models\User::class)
     @unless (request()->routeIs('books.*'))
         <div class="d-flex justify-content-end mb-4 mt-n3">
-            <a href="{{ route('books.index') }}" class="small">Record expense / correct books</a>
+            <a href="{{ route('books.index') }}" class="small">Record income / expense</a>
         </div>
     @endunless
 @endcan

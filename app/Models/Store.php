@@ -38,6 +38,11 @@ class Store extends Model
         return $this->hasMany(StoreExpense::class);
     }
 
+    public function incomes(): HasMany
+    {
+        return $this->hasMany(StoreIncome::class);
+    }
+
     /**
      * How this store is described in a cross-store report. The brand is masked
      * so a lookup cannot be used to map a competitor's customer book; the

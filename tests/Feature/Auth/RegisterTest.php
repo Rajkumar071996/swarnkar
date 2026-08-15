@@ -54,6 +54,7 @@ class RegisterTest extends TestCase
             ->assertSee(money(400000), false)
             ->assertSee('Bank')
             ->assertSee(money(600000), false)
+            ->assertSee('Income')
             ->assertSee('Expenses');
     }
 

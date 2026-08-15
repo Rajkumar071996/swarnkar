@@ -3,6 +3,7 @@
 namespace Tests\Feature\Books;
 
 use App\Models\StoreExpense;
+use App\Models\StoreIncome;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -31,6 +32,7 @@ class ShopBooksTest extends TestCase
             ->assertSee(money(500000), false)
             ->assertSee('Bank')
             ->assertSee(money(1000000), false)
+            ->assertSee('Income')
             ->assertSee('Expenses')
             ->assertSee(money(0), false);
 
@@ -131,6 +133,16 @@ class ShopBooksTest extends TestCase
                 'narration' => 'Tea',
             ])
             ->assertForbidden();
+
+        $this->actingAs($staff)
+            ->post(route('books.incomes.store'), [
+                'income_amount' => 100,
+                'received_in' => 'cash',
+                'kind' => 'income',
+                'received_on' => now()->toDateString(),
+                'income_narration' => 'From a friend',
+            ])
+            ->assertForbidden();
     }
 
     #[Test]
@@ -153,5 +165,91 @@ class ShopBooksTest extends TestCase
 
         $this->assertSame(0, StoreExpense::query()->count());
         $this->assertSame(1, StoreExpense::query()->networkWide()->where('store_id', $owner->store_id)->count());
+    }
+
+    #[Test]
+    public function income_with_a_remark_goes_into_the_till(): void
+    {
+        $user = User::factory()->owner()->create();
+
+        $this->actingAs($user)
+            ->post(route('books.incomes.store'), [
+                'income_amount' => 15000,
+                'received_in' => 'cash',
+                'kind' => 'income',
+                'received_on' => now()->toDateString(),
+                'income_narration' => 'Amount from Ramesh',
+            ])
+            ->assertRedirect();
+
+        $user->store->refresh();
+
+        $this->assertSame('415000.00', $user->store->cash_in_hand);
+        $this->assertSame('1000000.00', $user->store->opening_capital);
+        $this->assertSame(1, StoreIncome::query()->count());
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee(money(15000), false)
+            ->assertSee(money(415000), false);
+
+        $this->actingAs($user)
+            ->get(route('books.index'))
+            ->assertOk()
+            ->assertSee('Amount from Ramesh')
+            ->assertSee('Income')
+            ->assertSee(money(15000), false);
+    }
+
+    #[Test]
+    public function an_investment_raises_capital_and_the_bank(): void
+    {
+        $user = User::factory()->owner()->create();
+
+        $this->actingAs($user)
+            ->post(route('books.incomes.store'), [
+                'income_amount' => 200000,
+                'received_in' => 'bank',
+                'kind' => 'investment',
+                'received_on' => now()->toDateString(),
+                'income_narration' => 'Partner investment',
+            ])
+            ->assertRedirect();
+
+        $user->store->refresh();
+
+        $this->assertSame('800000.00', $user->store->bank_balance);
+        $this->assertSame('1200000.00', $user->store->opening_capital);
+        $this->assertSame('400000.00', $user->store->cash_in_hand);
+
+        $this->actingAs($user)
+            ->get(route('books.index'))
+            ->assertOk()
+            ->assertSee('Partner investment')
+            ->assertSee('Investment');
+    }
+
+    #[Test]
+    public function one_shops_income_does_not_show_in_another(): void
+    {
+        $owner = User::factory()->owner()->create();
+        $other = User::factory()->owner()->create();
+
+        $this->actingAs($owner)->post(route('books.incomes.store'), [
+            'income_amount' => 5000,
+            'received_in' => 'cash',
+            'kind' => 'income',
+            'received_on' => now()->toDateString(),
+            'income_narration' => 'Gold scrap sale',
+        ]);
+
+        $this->actingAs($other)
+            ->get(route('books.index'))
+            ->assertOk()
+            ->assertDontSee('Gold scrap sale');
+
+        $this->assertSame(0, StoreIncome::query()->count());
+        $this->assertSame(1, StoreIncome::query()->networkWide()->where('store_id', $owner->store_id)->count());
     }
 }

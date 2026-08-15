@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AuditLog;
 use App\Models\StoreExpense;
+use App\Models\StoreIncome;
 use App\Models\User;
 use App\Services\StoreBooks;
 use Illuminate\Http\RedirectResponse;
@@ -12,8 +13,8 @@ use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 
 /**
- * The shop's capital, till, bank and expenses. Opening figures are captured
- * at signup; this screen is for recording what goes out and correcting the books.
+ * The shop's capital, till, bank, income and expenses. Opening figures are
+ * captured at signup; this screen records money that later comes in or goes out.
  */
 class ShopBooksController extends Controller
 {
@@ -25,15 +26,42 @@ class ShopBooksController extends Controller
 
         $store = $request->user()->store;
 
+        $expenses = StoreExpense::query()
+            ->orderByDesc('paid_on')
+            ->orderByDesc('id')
+            ->limit(30)
+            ->get();
+
+        $incomes = StoreIncome::query()
+            ->orderByDesc('received_on')
+            ->orderByDesc('id')
+            ->limit(30)
+            ->get();
+
+        $entries = $incomes->map(fn (StoreIncome $row) => (object) [
+            'on' => $row->received_on,
+            'id' => $row->id,
+            'direction' => 'in',
+            'kind' => $row->kind,
+            'narration' => $row->narration,
+            'wallet' => $row->received_in,
+            'amount' => $row->amount,
+        ])->concat($expenses->map(fn (StoreExpense $row) => (object) [
+            'on' => $row->paid_on,
+            'id' => $row->id,
+            'direction' => 'out',
+            'kind' => 'expense',
+            'narration' => $row->narration,
+            'wallet' => $row->paid_from,
+            'amount' => $row->amount,
+        ]))->sortByDesc(fn ($row) => $row->on->format('Y-m-d').$row->direction.$row->id)
+            ->take(40)
+            ->values();
+
         return view('books.index', [
             'books' => $this->books->snapshot($store),
             'store' => $store,
-            'expenses' => StoreExpense::query()
-                ->with('recordedBy')
-                ->orderByDesc('paid_on')
-                ->orderByDesc('id')
-                ->limit(30)
-                ->get(),
+            'entries' => $entries,
         ]);
     }
 
@@ -89,5 +117,38 @@ class ShopBooksController extends Controller
         ]);
 
         return back()->with('success', money($expense->amount).' expense recorded.');
+    }
+
+    public function storeIncome(Request $request): RedirectResponse
+    {
+        $this->authorize('manageStaff', User::class);
+
+        $data = $request->validate([
+            'income_amount' => ['required', 'numeric', 'min:0.01', 'max:999999999'],
+            'received_in' => ['required', 'in:cash,bank'],
+            'kind' => ['required', 'in:income,investment'],
+            'received_on' => ['required', 'date', 'before_or_equal:today'],
+            'income_narration' => ['required', 'string', 'max:255'],
+        ]);
+
+        $income = $this->books->recordIncome(
+            $request->user()->store,
+            (float) $data['income_amount'],
+            $data['received_in'],
+            $data['kind'],
+            Carbon::parse($data['received_on']),
+            $data['income_narration'],
+            $request->user(),
+        );
+
+        AuditLog::record('books.income', $income, [
+            'amount' => $income->amount,
+            'kind' => $income->kind,
+            'received_in' => $income->received_in,
+        ]);
+
+        $label = $income->isInvestment() ? 'investment' : 'income';
+
+        return back()->with('success', money($income->amount).' '.$label.' recorded.');
     }
 }

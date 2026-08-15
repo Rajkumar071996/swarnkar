@@ -2,13 +2,75 @@
 
 @section('title', 'Shop books')
 @section('heading', 'Shop books')
-@section('subheading', 'Capital you started with, cash and bank you have today, and expenses paid out.')
+@section('subheading', 'Capital you started with, cash and bank you have today, and money that later came in or went out.')
 
 @section('content')
     @include('partials.books-cards')
 
     <div class="row g-3">
         <div class="col-lg-5">
+            <div class="card gs-stat-card mb-3">
+                <div class="card-header bg-white fw-semibold">Record income</div>
+                <div class="card-body">
+                    <form method="POST" action="{{ route('books.incomes.store') }}">
+                        @csrf
+
+                        <div class="mb-3">
+                            <label for="income_amount" class="form-label">Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input type="number" step="0.01" min="0.01" id="income_amount" name="income_amount"
+                                       value="{{ old('income_amount') }}"
+                                       class="form-control @error('income_amount') is-invalid @enderror" required>
+                                @error('income_amount') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="kind" class="form-label">What is it</label>
+                            <select id="kind" name="kind"
+                                    class="form-select @error('kind') is-invalid @enderror" required>
+                                <option value="income" @selected(old('kind', 'income') === 'income')>Income — someone paid / other receipt</option>
+                                <option value="investment" @selected(old('kind') === 'investment')>Investment — adds to capital</option>
+                            </select>
+                            @error('kind') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="received_in" class="form-label">Received in</label>
+                            <select id="received_in" name="received_in"
+                                    class="form-select @error('received_in') is-invalid @enderror" required>
+                                <option value="cash" @selected(old('received_in', 'cash') === 'cash')>Cash in hand</option>
+                                <option value="bank" @selected(old('received_in') === 'bank')>Bank</option>
+                            </select>
+                            @error('received_in') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="received_on" class="form-label">Date</label>
+                            <input type="date" id="received_on" name="received_on"
+                                   value="{{ old('received_on', now()->toDateString()) }}"
+                                   max="{{ now()->toDateString() }}"
+                                   class="form-control @error('received_on') is-invalid @enderror" required>
+                            @error('received_on') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="income_narration" class="form-label">Remark</label>
+                            <input type="text" id="income_narration" name="income_narration"
+                                   value="{{ old('income_narration') }}"
+                                   class="form-control @error('income_narration') is-invalid @enderror"
+                                   placeholder="e.g. Partner investment, amount from Ramesh" required>
+                            @error('income_narration') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check2 me-1"></i>Save income
+                        </button>
+                    </form>
+                </div>
+            </div>
+
             <div class="card gs-stat-card mb-3">
                 <div class="card-header bg-white fw-semibold">Record an expense</div>
                 <div class="card-body">
@@ -76,7 +138,7 @@
                                        class="form-control @error('opening_capital') is-invalid @enderror" required>
                                 @error('opening_capital') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
-                            <div class="form-text">What you started the shop with. This does not change when you pay an expense.</div>
+                            <div class="form-text">What you started the shop with. An investment recorded above raises this; an expense does not.</div>
                         </div>
 
                         <div class="mb-3">
@@ -109,29 +171,39 @@
 
         <div class="col-lg-7">
             <div class="card gs-stat-card">
-                <div class="card-header bg-white fw-semibold">Recent expenses</div>
+                <div class="card-header bg-white fw-semibold">Recent entries</div>
                 <div class="table-responsive">
                     <table class="table table-sm align-middle mb-0">
                         <thead class="table-light">
                         <tr>
                             <th>Date</th>
-                            <th>For</th>
-                            <th>From</th>
+                            <th>Remark</th>
+                            <th>Type</th>
+                            <th>Wallet</th>
                             <th class="text-end">Amount</th>
                         </tr>
                         </thead>
                         <tbody>
-                        @forelse ($expenses as $expense)
+                        @forelse ($entries as $entry)
                             <tr>
-                                <td class="small">{{ $expense->paid_on->format('d M Y') }}</td>
-                                <td>{{ $expense->narration }}</td>
-                                <td class="small text-muted">{{ $expense->paid_from === 'bank' ? 'Bank' : 'Cash' }}</td>
-                                <td class="text-end">{{ money($expense->amount) }}</td>
+                                <td class="small">{{ $entry->on->format('d M Y') }}</td>
+                                <td>{{ $entry->narration }}</td>
+                                <td class="small">
+                                    @if ($entry->direction === 'in')
+                                        <span class="text-success">{{ $entry->kind === 'investment' ? 'Investment' : 'Income' }}</span>
+                                    @else
+                                        <span class="text-danger">Expense</span>
+                                    @endif
+                                </td>
+                                <td class="small text-muted">{{ $entry->wallet === 'bank' ? 'Bank' : 'Cash' }}</td>
+                                <td class="text-end {{ $entry->direction === 'in' ? 'text-success' : 'text-danger' }}">
+                                    {{ $entry->direction === 'in' ? '+' : '−' }}{{ money($entry->amount) }}
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="text-center text-muted py-4">
-                                    No expenses recorded yet.
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    No income or expenses recorded yet.
                                 </td>
                             </tr>
                         @endforelse

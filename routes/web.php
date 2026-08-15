@@ -36,6 +36,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('books', [ShopBooksController::class, 'index'])->name('books.index');
     Route::put('books', [ShopBooksController::class, 'update'])->name('books.update');
     Route::post('books/expenses', [ShopBooksController::class, 'storeExpense'])->name('books.expenses.store');
+    Route::post('books/incomes', [ShopBooksController::class, 'storeIncome'])->name('books.incomes.store');
 
     // Consent-gated credit check.
     Route::get('lookup', [LookupController::class, 'index'])->name('lookup.index');
