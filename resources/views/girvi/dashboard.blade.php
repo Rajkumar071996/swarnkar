@@ -14,6 +14,16 @@
 @endsection
 
 @section('content')
+    @can('manageStaff', App\Models\User::class)
+        @unless (auth()->user()->store->openingBooksAreSet('girvi'))
+            <div class="alert alert-warning">
+                Girvi books start at zero and are separate from GoldScore.
+                <a href="{{ route('books.index') }}" class="alert-link">Set girvi capital and cash</a>
+                before taking a pledge.
+            </div>
+        @endunless
+    @endcan
+
     @include('partials.books-cards')
 
     <div class="row g-3 mb-4">

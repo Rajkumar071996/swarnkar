@@ -11,48 +11,66 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * The shop's till and bank. Capital is what the owner put in at the start;
- * cash and bank move as girvi goes out, money comes in, and expenses are paid.
+ * Each product has its own till. GoldScore books are the shop's udhaar
+ * capital; girvi books are the pledge counter. Mixing them made both
+ * dashboards show the same numbers.
  */
 class StoreBooks
 {
-    /**
-     * @return array{capital: float, cash: float, bank: float, income: float, expenses: float, profit: float}
-     */
-    public function snapshot(Store $store): array
+    public const GOLDSCORE = 'goldscore';
+
+    public const GIRVI = 'girvi';
+
+    public function resolveModule(?string $module): string
     {
+        return $module === self::GIRVI ? self::GIRVI : self::GOLDSCORE;
+    }
+
+    /**
+     * @return array{capital: float, cash: float, bank: float, income: float, expenses: float, profit: float, module: string}
+     */
+    public function snapshot(Store $store, ?string $module = null): array
+    {
+        $module = $this->resolveModule($module);
+        $columns = $this->columns($module);
+
         $income = round((float) StoreIncome::query()
             ->where('store_id', $store->id)
+            ->where('module', $module)
             ->where('kind', 'income')
             ->sum('amount'), 2);
         $expenses = round((float) StoreExpense::query()
             ->where('store_id', $store->id)
+            ->where('module', $module)
             ->sum('amount'), 2);
 
         return [
-            'capital' => round((float) $store->opening_capital, 2),
-            'cash' => round((float) $store->cash_in_hand, 2),
-            'bank' => round((float) $store->bank_balance, 2),
+            'module' => $module,
+            'capital' => round((float) $store->{$columns['capital']}, 2),
+            'cash' => round((float) $store->{$columns['cash']}, 2),
+            'bank' => round((float) $store->{$columns['bank']}, 2),
             'income' => $income,
             'expenses' => $expenses,
             'profit' => round($income - $expenses, 2),
         ];
     }
 
-    public function debit(Store $store, string $wallet, float $amount, string $label = 'amount'): void
+    public function debit(Store $store, string $wallet, float $amount, string $label = 'amount', ?string $module = null): void
     {
         if ($amount <= 0.009) {
             return;
         }
 
-        DB::transaction(function () use ($store, $wallet, $amount, $label) {
+        $module = $this->resolveModule($module);
+
+        DB::transaction(function () use ($store, $wallet, $amount, $label, $module) {
             $locked = $this->lock($store);
-            $column = $this->column($wallet);
+            $column = $this->column($wallet, $module);
             $available = round((float) $locked->{$column}, 2);
 
             if ($amount > $available + 0.009) {
                 throw ValidationException::withMessages([
-                    $label => 'Only '.money($available).' is available in '.$this->label($wallet).'.',
+                    $label => 'Only '.money($available).' is available in '.$this->label($wallet, $module).'.',
                 ]);
             }
 
@@ -63,15 +81,17 @@ class StoreBooks
         $store->refresh();
     }
 
-    public function credit(Store $store, string $wallet, float $amount): void
+    public function credit(Store $store, string $wallet, float $amount, ?string $module = null): void
     {
         if ($amount <= 0.009) {
             return;
         }
 
-        DB::transaction(function () use ($store, $wallet, $amount) {
+        $module = $this->resolveModule($module);
+
+        DB::transaction(function () use ($store, $wallet, $amount, $module) {
             $locked = $this->lock($store);
-            $column = $this->column($wallet);
+            $column = $this->column($wallet, $module);
             $locked->{$column} = round((float) $locked->{$column} + $amount, 2);
             $locked->save();
         });
@@ -86,6 +106,7 @@ class StoreBooks
         Carbon $paidOn,
         string $narration,
         User $user,
+        ?string $module = null,
     ): StoreExpense {
         if ($amount <= 0.009) {
             throw ValidationException::withMessages([
@@ -93,11 +114,14 @@ class StoreBooks
             ]);
         }
 
-        return DB::transaction(function () use ($store, $amount, $wallet, $paidOn, $narration, $user) {
-            $this->debit($store, $wallet, $amount);
+        $module = $this->resolveModule($module);
+
+        return DB::transaction(function () use ($store, $amount, $wallet, $paidOn, $narration, $user, $module) {
+            $this->debit($store, $wallet, $amount, 'amount', $module);
 
             return StoreExpense::create([
                 'store_id' => $store->id,
+                'module' => $module,
                 'amount' => $amount,
                 'paid_from' => $wallet,
                 'paid_on' => $paidOn,
@@ -119,6 +143,7 @@ class StoreBooks
         Carbon $receivedOn,
         string $narration,
         User $user,
+        ?string $module = null,
     ): StoreIncome {
         if ($amount <= 0.009) {
             throw ValidationException::withMessages([
@@ -132,18 +157,22 @@ class StoreBooks
             ]);
         }
 
-        return DB::transaction(function () use ($store, $amount, $wallet, $kind, $receivedOn, $narration, $user) {
-            $this->credit($store, $wallet, $amount);
+        $module = $this->resolveModule($module);
+
+        return DB::transaction(function () use ($store, $amount, $wallet, $kind, $receivedOn, $narration, $user, $module) {
+            $this->credit($store, $wallet, $amount, $module);
 
             if ($kind === 'investment') {
                 $locked = $this->lock($store);
-                $locked->opening_capital = round((float) $locked->opening_capital + $amount, 2);
+                $capital = $this->columns($module)['capital'];
+                $locked->{$capital} = round((float) $locked->{$capital} + $amount, 2);
                 $locked->save();
                 $store->refresh();
             }
 
             return StoreIncome::create([
                 'store_id' => $store->id,
+                'module' => $module,
                 'amount' => $amount,
                 'kind' => $kind,
                 'received_in' => $wallet,
@@ -162,21 +191,44 @@ class StoreBooks
         return $method === 'cash' ? 'cash' : 'bank';
     }
 
+    /**
+     * @return array{capital: string, cash: string, bank: string, set_at: string}
+     */
+    public function columns(string $module): array
+    {
+        if ($this->resolveModule($module) === self::GIRVI) {
+            return [
+                'capital' => 'girvi_opening_capital',
+                'cash' => 'girvi_cash_in_hand',
+                'bank' => 'girvi_bank_balance',
+                'set_at' => 'girvi_books_set_at',
+            ];
+        }
+
+        return [
+            'capital' => 'opening_capital',
+            'cash' => 'cash_in_hand',
+            'bank' => 'bank_balance',
+            'set_at' => 'books_set_at',
+        ];
+    }
+
     private function lock(Store $store): Store
     {
         return Store::query()->whereKey($store->id)->lockForUpdate()->firstOrFail();
     }
 
-    private function column(string $wallet): string
+    private function column(string $wallet, string $module): string
     {
-        return match ($wallet) {
-            'bank' => 'bank_balance',
-            default => 'cash_in_hand',
-        };
+        $columns = $this->columns($module);
+
+        return $wallet === 'bank' ? $columns['bank'] : $columns['cash'];
     }
 
-    private function label(string $wallet): string
+    private function label(string $wallet, string $module): string
     {
-        return $wallet === 'bank' ? 'the bank' : 'cash in hand';
+        $book = $module === self::GIRVI ? 'girvi ' : '';
+
+        return $wallet === 'bank' ? 'the '.$book.'bank' : $book.'cash in hand';
     }
 }

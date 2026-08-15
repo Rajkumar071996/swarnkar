@@ -51,8 +51,5 @@
         <li><span>Disclaimer</span> : we will not take any responsibility if the receipt is lost</li>
     </ol>
 
-    <div class="gs-slip-signs">
-        <div>Customer sign</div>
-        <div>Lender sign</div>
-    </div>
+    @include('girvi._sign-block', ['signatureUri' => $loan->customer->signatureDataUri()])
 </div>

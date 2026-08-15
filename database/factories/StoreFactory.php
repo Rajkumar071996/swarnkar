@@ -37,6 +37,10 @@ class StoreFactory extends Factory
             'cash_in_hand' => 400000,
             'bank_balance' => 600000,
             'books_set_at' => now(),
+            'girvi_opening_capital' => 1000000,
+            'girvi_cash_in_hand' => 400000,
+            'girvi_bank_balance' => 600000,
+            'girvi_books_set_at' => now(),
         ];
     }
 }

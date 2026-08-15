@@ -32,6 +32,7 @@ class CustomerRequest extends FormRequest
             'state' => ['nullable', 'string', 'max:100'],
             'pincode' => ['nullable', 'string', 'regex:/^\d{6}$/'],
             'local_reference' => ['nullable', 'string', 'max:100'],
+            'signature' => ['nullable', 'string', 'max:300000'],
         ];
     }
 

@@ -7,8 +7,10 @@ use App\Models\Customer;
 use App\Models\GoldLoan;
 use App\Models\GoldLoanItem;
 use App\Models\User;
+use App\Services\CustomerSignature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -86,9 +88,12 @@ class GirviDepositTest extends TestCase
         $this->assertSame($this->user->id, $loan->created_by_user_id);
 
         $this->user->store->refresh();
-        $this->assertSame('360000.00', $this->user->store->cash_in_hand);
+        $this->assertSame('400000.00', $this->user->store->cash_in_hand);
+        $this->assertSame('360000.00', $this->user->store->girvi_cash_in_hand);
         $this->assertSame('600000.00', $this->user->store->bank_balance);
+        $this->assertSame('600000.00', $this->user->store->girvi_bank_balance);
         $this->assertSame('1000000.00', $this->user->store->opening_capital);
+        $this->assertSame('1000000.00', $this->user->store->girvi_opening_capital);
     }
 
     #[Test]
@@ -138,6 +143,26 @@ class GirviDepositTest extends TestCase
             ->assertSee('Money out')
             ->assertSee('₹40,000')
             ->assertSee('9.160 g');
+    }
+
+    #[Test]
+    public function the_receipt_prints_the_customers_signature(): void
+    {
+        Storage::fake('local');
+        app(CustomerSignature::class)->store(
+            $this->customer,
+            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+        );
+
+        $this->actingAs($this->user)->post(route('girvi.loans.store'), $this->payload());
+        $loan = GoldLoan::query()->firstOrFail();
+
+        $this->actingAs($this->user)
+            ->get(route('girvi.loans.receipt', $loan))
+            ->assertOk()
+            ->assertSee('Customer sign')
+            ->assertSee('gs-slip-sign-img', false)
+            ->assertSee('data:image/png;base64,', false);
     }
 
     #[Test]

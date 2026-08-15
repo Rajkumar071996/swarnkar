@@ -70,7 +70,7 @@ class DashboardController extends Controller
             'overdueUdhaars' => $overdueUdhaars,
             'advanceHeld' => $advanceHeld,
             'riskMix' => $this->riskMix($storeId),
-            'books' => $this->books->snapshot($request->user()->store),
+            'books' => $this->books->snapshot($request->user()->store, StoreBooks::GOLDSCORE),
         ]);
     }
 

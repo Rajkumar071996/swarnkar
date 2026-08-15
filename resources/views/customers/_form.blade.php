@@ -117,6 +117,24 @@
         </select>
         @error('business_type') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
+
+    <div class="col-12">
+        <label class="form-label">Customer signature</label>
+        <div class="gs-signature-pad" data-gs-signature-pad>
+            @if (isset($customer) && $customer->signatureDataUri())
+                <img src="{{ $customer->signatureDataUri() }}" alt="Saved signature" class="gs-signature-preview mb-2">
+            @endif
+            <canvas width="560" height="160" aria-label="Signature pad"></canvas>
+            <input type="hidden" name="signature" value="" data-gs-signature-input>
+            <div class="d-flex gap-2 mt-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-gs-signature-clear>
+                    Clear
+                </button>
+            </div>
+            <div class="form-text">Ask the customer to sign with a finger or mouse. Leave blank to keep the current one.</div>
+        </div>
+        @error('signature') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+    </div>
 </div>
 
 <div class="mt-4 d-flex flex-column flex-sm-row gap-2 gs-form-actions">

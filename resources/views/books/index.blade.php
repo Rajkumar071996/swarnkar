@@ -1,8 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'Shop books')
-@section('heading', 'Shop books')
-@section('subheading', 'Capital you started with, cash and bank you have today, and money that later came in or went out.')
+@section('title', $module === 'girvi' ? 'Girvi books' : 'Shop books')
+@section('heading', $module === 'girvi' ? 'Girvi books' : 'Shop books')
+@section('subheading', $module === 'girvi'
+    ? 'Girvi capital, cash and bank — separate from GoldScore.'
+    : 'GoldScore capital, cash and bank — separate from Girvi.')
 
 @section('content')
     @include('partials.books-cards')
@@ -126,7 +128,7 @@
         </div>
     </div>
 
-    @unless ($store->openingBooksAreSet())
+    @unless ($booksAreSet)
         <div class="card gs-stat-card mb-3">
             <div class="card-header bg-white fw-semibold">Correct the books</div>
             <div class="card-body">
@@ -139,7 +141,7 @@
                         <div class="input-group">
                             <span class="input-group-text">₹</span>
                             <input type="number" step="0.01" min="0" id="opening_capital" name="opening_capital"
-                                   value="{{ old('opening_capital', $store->opening_capital) }}"
+                                   value="{{ old('opening_capital', $opening['capital']) }}"
                                    class="form-control @error('opening_capital') is-invalid @enderror" required>
                             @error('opening_capital') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
@@ -150,7 +152,7 @@
                         <div class="input-group">
                             <span class="input-group-text">₹</span>
                             <input type="number" step="0.01" min="0" id="cash_in_hand" name="cash_in_hand"
-                                   value="{{ old('cash_in_hand', $store->cash_in_hand) }}"
+                                   value="{{ old('cash_in_hand', $opening['cash']) }}"
                                    class="form-control @error('cash_in_hand') is-invalid @enderror" required>
                             @error('cash_in_hand') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
@@ -161,7 +163,7 @@
                         <div class="input-group">
                             <span class="input-group-text">₹</span>
                             <input type="number" step="0.01" min="0" id="bank_balance" name="bank_balance"
-                                   value="{{ old('bank_balance', $store->bank_balance) }}"
+                                   value="{{ old('bank_balance', $opening['bank']) }}"
                                    class="form-control @error('bank_balance') is-invalid @enderror" required>
                             @error('bank_balance') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
@@ -171,7 +173,7 @@
                         <button type="submit" class="btn btn-outline-primary w-100">Save books</button>
                     </div>
                 </form>
-                <p class="form-text mb-0 mt-2">This can only be saved once. After that, cash and bank move through income, expenses and girvi.</p>
+                <p class="form-text mb-0 mt-2">This can only be saved once. After that, cash and bank move through income, expenses{{ $module === 'girvi' ? ' and girvi' : '' }}.</p>
             </div>
         </div>
     @endunless

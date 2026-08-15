@@ -97,7 +97,7 @@ class GirviLedger
 
             $loan->items()->createMany($priced['items']);
 
-            $this->books->debit($user->store, 'cash', $principal, 'principal_amount');
+            $this->books->debit($user->store, 'cash', $principal, 'principal_amount', StoreBooks::GIRVI);
 
             AuditLog::record('girvi.deposited', $loan, [
                 'customer_id' => $loan->customer_id,
@@ -144,7 +144,7 @@ class GirviLedger
             $loan->interest_collected = round((float) $loan->interest_collected + $amount, 2);
             $loan->save();
 
-            $this->books->credit($loan->store, $this->books->walletForMethod($method), $amount);
+            $this->books->credit($loan->store, $this->books->walletForMethod($method), $amount, StoreBooks::GIRVI);
 
             AuditLog::record('girvi.interest_collected', $loan, ['amount' => $amount]);
 
@@ -195,7 +195,7 @@ class GirviLedger
                 'status' => GoldLoanStatus::Closed,
             ])->save();
 
-            $this->books->credit($loan->store, 'cash', $summary['total']);
+            $this->books->credit($loan->store, 'cash', $summary['total'], StoreBooks::GIRVI);
 
             AuditLog::record('girvi.released', $loan, [
                 'total' => $summary['total'],

@@ -21,6 +21,9 @@ class ShopBooksTest extends TestCase
             'opening_capital' => 1500000,
             'cash_in_hand' => 500000,
             'bank_balance' => 1000000,
+            'girvi_opening_capital' => 700000,
+            'girvi_cash_in_hand' => 250000,
+            'girvi_bank_balance' => 450000,
         ])->save();
 
         $this->actingAs($user)
@@ -35,15 +38,19 @@ class ShopBooksTest extends TestCase
             ->assertSee('Income')
             ->assertSee('Expenses')
             ->assertSee('Profit')
-            ->assertSee(money(0), false);
+            ->assertSee(money(0), false)
+            ->assertDontSee(money(700000), false)
+            ->assertDontSee(money(250000), false);
 
         $this->actingAs($user)
             ->get(route('girvi.dashboard'))
             ->assertOk()
             ->assertSee('Capital')
-            ->assertSee(money(1500000), false)
-            ->assertSee(money(500000), false)
-            ->assertSee(money(1000000), false);
+            ->assertSee(money(700000), false)
+            ->assertSee(money(250000), false)
+            ->assertSee(money(450000), false)
+            ->assertDontSee(money(1500000), false)
+            ->assertDontSee(money(500000), false);
     }
 
     #[Test]
@@ -317,11 +324,55 @@ class ShopBooksTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get(route('girvi.dashboard'))
+            ->get(route('dashboard'))
             ->assertOk()
             ->assertSee('Loss')
             ->assertSee(money(25000), false)
             ->assertDontSee('>Profit<', false);
+    }
+
+    #[Test]
+    public function goldscore_and_girvi_keep_separate_tills(): void
+    {
+        $user = User::factory()->owner()->create();
+
+        $this->actingAs($user)->get(route('girvi.dashboard'));
+
+        $this->actingAs($user)->post(route('books.expenses.store'), [
+            'amount' => 10000,
+            'paid_from' => 'cash',
+            'paid_on' => now()->toDateString(),
+            'narration' => 'Girvi shop rent',
+        ])->assertRedirect();
+
+        $user->store->refresh();
+
+        $this->assertSame('400000.00', $user->store->cash_in_hand);
+        $this->assertSame('390000.00', $user->store->girvi_cash_in_hand);
+
+        $this->actingAs($user)
+            ->get(route('girvi.dashboard'))
+            ->assertOk()
+            ->assertSee(money(390000), false)
+            ->assertSee(money(10000), false);
+
+        $this->actingAs($user)
+            ->get(route('books.index'))
+            ->assertOk()
+            ->assertSee('Girvi books')
+            ->assertSee('Girvi shop rent');
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee(money(400000), false)
+            ->assertDontSee(money(390000), false);
+
+        $this->actingAs($user)
+            ->get(route('books.index'))
+            ->assertOk()
+            ->assertSee('Shop books')
+            ->assertDontSee('Girvi shop rent');
     }
 
     #[Test]

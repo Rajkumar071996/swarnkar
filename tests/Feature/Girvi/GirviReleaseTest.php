@@ -7,9 +7,11 @@ use App\Events\CustomerLedgerChanged;
 use App\Models\Customer;
 use App\Models\GoldLoan;
 use App\Models\User;
+use App\Services\CustomerSignature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -146,7 +148,8 @@ class GirviReleaseTest extends TestCase
             'method' => 'cash',
         ]);
 
-        $this->assertSame('402000.00', $this->user->store->fresh()->cash_in_hand);
+        $this->assertSame('400000.00', $this->user->store->fresh()->cash_in_hand);
+        $this->assertSame('402000.00', $this->user->store->fresh()->girvi_cash_in_hand);
 
         $this->actingAs($this->user)->post(route('girvi.loans.interest', $this->loan), [
             'amount' => 500,
@@ -156,8 +159,10 @@ class GirviReleaseTest extends TestCase
 
         $store = $this->user->store->fresh();
 
-        $this->assertSame('402000.00', $store->cash_in_hand);
-        $this->assertSame('600500.00', $store->bank_balance);
+        $this->assertSame('400000.00', $store->cash_in_hand);
+        $this->assertSame('402000.00', $store->girvi_cash_in_hand);
+        $this->assertSame('600000.00', $store->bank_balance);
+        $this->assertSame('600500.00', $store->girvi_bank_balance);
     }
 
     #[Test]
@@ -252,5 +257,26 @@ class GirviReleaseTest extends TestCase
             ->assertSee('41220')
             ->assertSee('Print Receipt')
             ->assertSee('we will not take any responsibility if the receipt is lost');
+    }
+
+    #[Test]
+    public function the_release_receipt_prints_the_customers_signature(): void
+    {
+        Storage::fake('local');
+        app(CustomerSignature::class)->store(
+            $this->customer,
+            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+        );
+
+        $this->actingAs($this->user)->post(route('girvi.release.store', $this->loan), [
+            'released_on' => '2026-03-15',
+        ]);
+
+        $this->actingAs($this->user)
+            ->get(route('girvi.release.receipt', $this->loan))
+            ->assertOk()
+            ->assertSee('Customer sign')
+            ->assertSee('gs-slip-sign-img', false)
+            ->assertSee('data:image/png;base64,', false);
     }
 }

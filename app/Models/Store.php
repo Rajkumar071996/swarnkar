@@ -16,6 +16,7 @@ class Store extends Model
         'name', 'legal_name', 'gstin', 'phone', 'email',
         'address_line', 'city', 'state', 'pincode', 'is_active',
         'opening_capital', 'cash_in_hand', 'bank_balance', 'books_set_at',
+        'girvi_opening_capital', 'girvi_cash_in_hand', 'girvi_bank_balance', 'girvi_books_set_at',
     ];
 
     protected function casts(): array
@@ -26,12 +27,18 @@ class Store extends Model
             'cash_in_hand' => 'decimal:2',
             'bank_balance' => 'decimal:2',
             'books_set_at' => 'datetime',
+            'girvi_opening_capital' => 'decimal:2',
+            'girvi_cash_in_hand' => 'decimal:2',
+            'girvi_bank_balance' => 'decimal:2',
+            'girvi_books_set_at' => 'datetime',
         ];
     }
 
-    public function openingBooksAreSet(): bool
+    public function openingBooksAreSet(string $module = 'goldscore'): bool
     {
-        return $this->books_set_at !== null;
+        return $module === 'girvi'
+            ? $this->girvi_books_set_at !== null
+            : $this->books_set_at !== null;
     }
 
     public function users(): HasMany

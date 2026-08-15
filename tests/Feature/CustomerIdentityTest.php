@@ -6,9 +6,11 @@ use App\Models\Customer;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\CustomerDirectory;
+use App\Services\CustomerSignature;
 use App\Support\BlindIndex;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -196,5 +198,54 @@ class CustomerIdentityTest extends TestCase
         ])->assertSessionHasErrors('aadhaar');
 
         $this->assertSame(0, Customer::count());
+    }
+
+    #[Test]
+    public function a_customer_signature_is_saved_and_shown_on_the_profile(): void
+    {
+        Storage::fake('local');
+        $user = User::factory()->owner()->create();
+
+        $this->actingAs($user)->post(route('customers.store'), [
+            'full_name' => 'Signed Person',
+            'mobile' => '9876543212',
+            'signature' => $this->pngDataUrl(),
+        ])->assertRedirect();
+
+        $customer = Customer::query()->first();
+
+        $this->assertNotNull($customer->signature_path);
+        Storage::disk('local')->assertExists($customer->signature_path);
+
+        $this->actingAs($user)
+            ->get(route('customers.show', $customer))
+            ->assertOk()
+            ->assertSee('Signature')
+            ->assertSee('data:image/png;base64,', false);
+    }
+
+    #[Test]
+    public function clearing_a_signature_removes_it(): void
+    {
+        Storage::fake('local');
+        $user = User::factory()->owner()->create();
+        $customer = Customer::factory()->named('Signed Person')->withMobile('9876543213')->create();
+        $customer->stores()->attach($user->store_id, ['first_seen_at' => now()]);
+
+        app(CustomerSignature::class)->store($customer, $this->pngDataUrl());
+        $this->assertNotNull($customer->fresh()->signature_path);
+
+        $this->actingAs($user)->put(route('customers.update', $customer), [
+            'full_name' => 'Signed Person',
+            'mobile' => '9876543213',
+            'signature' => 'clear',
+        ])->assertRedirect();
+
+        $this->assertNull($customer->fresh()->signature_path);
+    }
+
+    private function pngDataUrl(): string
+    {
+        return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
     }
 }

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['store_id', 'amount', 'paid_from', 'paid_on', 'narration', 'recorded_by_user_id'])]
+#[Fillable(['store_id', 'module', 'amount', 'paid_from', 'paid_on', 'narration', 'recorded_by_user_id'])]
 class StoreExpense extends Model
 {
     use BelongsToStore;

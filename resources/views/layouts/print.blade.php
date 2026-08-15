@@ -102,6 +102,15 @@
             font-weight: 600;
         }
 
+        .gs-slip-sign-img {
+            display: block;
+            height: 28px;
+            width: auto;
+            max-width: 7.5rem;
+            object-fit: contain;
+            margin-bottom: 0.15rem;
+        }
+
         @page {
             size: A5 landscape;
             margin: 6mm;

@@ -56,7 +56,7 @@ class GirviDashboardController extends Controller
             ],
             'dueSoon' => $dueSoon,
             'overdue' => $overdue,
-            'books' => $this->books->snapshot($request->user()->store),
+            'books' => $this->books->snapshot($request->user()->store, StoreBooks::GIRVI),
         ]);
     }
 }

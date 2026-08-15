@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\CustomerSignature;
 use App\Support\BlindIndex;
 use Database\Factories\CustomerFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -23,7 +24,7 @@ use Illuminate\Support\Facades\Crypt;
 #[Fillable([
     'full_name', 'mobile', 'pan', 'aadhaar_last4', 'date_of_birth',
     'address_line', 'city', 'post', 'caste', 'business_type', 'photo_path',
-    'state', 'pincode', 'created_by_store_id',
+    'signature_path', 'state', 'pincode', 'created_by_store_id',
 ])]
 #[Hidden(['mobile_hash', 'pan_hash', 'aadhaar_hash'])]
 class Customer extends Model
@@ -177,5 +178,10 @@ class Customer extends Model
     public function maskedPan(): ?string
     {
         return $this->pan ? substr($this->pan, 0, 3).'XXXX'.substr($this->pan, -3) : null;
+    }
+
+    public function signatureDataUri(): ?string
+    {
+        return app(CustomerSignature::class)->dataUri($this);
     }
 }

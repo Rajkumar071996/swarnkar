@@ -55,6 +55,10 @@ class DemoDataSeeder extends Seeder
             'cash_in_hand' => 500000,
             'bank_balance' => 1000000,
             'books_set_at' => $this->today,
+            'girvi_opening_capital' => 2000000,
+            'girvi_cash_in_hand' => 800000,
+            'girvi_bank_balance' => 1200000,
+            'girvi_books_set_at' => $this->today,
         ]);
 
         // A second store exists so cross-store scoring and merchant

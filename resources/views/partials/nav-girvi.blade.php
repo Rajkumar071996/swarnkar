@@ -42,7 +42,7 @@
         </li>
         <li class="nav-item">
             <a href="{{ route('books.index') }}" class="nav-link @active('books.*')">
-                <i class="bi bi-journal-text me-2"></i>Shop books
+                <i class="bi bi-journal-text me-2"></i>Girvi books
             </a>
         </li>
         <li class="nav-item">

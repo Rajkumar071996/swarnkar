@@ -46,6 +46,13 @@
                         <dt class="col-5">State</dt>
                         <dd class="col-7">{{ $customer->state ?: '--' }}</dd>
                     </dl>
+
+                    @if ($customer->signatureDataUri())
+                        <div class="mt-3">
+                            <div class="text-muted text-uppercase small mb-2">Signature</div>
+                            <img src="{{ $customer->signatureDataUri() }}" alt="Customer signature" class="gs-signature-preview">
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

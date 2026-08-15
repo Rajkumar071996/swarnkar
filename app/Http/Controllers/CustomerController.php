@@ -7,13 +7,17 @@ use App\Models\AuditLog;
 use App\Models\Customer;
 use App\Models\Udhaar;
 use App\Services\CustomerDirectory;
+use App\Services\CustomerSignature;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CustomerController extends Controller
 {
-    public function __construct(private readonly CustomerDirectory $directory) {}
+    public function __construct(
+        private readonly CustomerDirectory $directory,
+        private readonly CustomerSignature $signatures,
+    ) {}
 
     public function index(Request $request): View
     {
@@ -48,7 +52,8 @@ class CustomerController extends Controller
         $aadhaar = $data['aadhaar'] ?? null;
         $localReference = $data['local_reference'] ?? null;
         $ledgerNo = $data['ledger_no'] ?? null;
-        unset($data['aadhaar'], $data['local_reference'], $data['ledger_no']);
+        $signature = $data['signature'] ?? null;
+        unset($data['aadhaar'], $data['local_reference'], $data['ledger_no'], $data['signature']);
 
         $existing = $this->directory->findByIdentifier($data['mobile']);
 
@@ -61,6 +66,8 @@ class CustomerController extends Controller
             'local_reference' => $localReference,
             'ledger_no' => $ledgerNo,
         ]));
+
+        $this->signatures->store($customer, $signature);
 
         AuditLog::record('customer.saved', $customer, ['matched_existing' => (bool) $existing]);
 
@@ -106,7 +113,8 @@ class CustomerController extends Controller
         $data = $request->validated();
         $aadhaar = $data['aadhaar'] ?? null;
         $ledgerNo = $data['ledger_no'] ?? null;
-        unset($data['aadhaar'], $data['local_reference'], $data['ledger_no']);
+        $signature = $data['signature'] ?? null;
+        unset($data['aadhaar'], $data['local_reference'], $data['ledger_no'], $data['signature']);
 
         $this->directory->linkToStore($customer, $request->user()->store_id, [
             'ledger_no' => $ledgerNo,
@@ -119,6 +127,7 @@ class CustomerController extends Controller
         }
 
         $customer->save();
+        $this->signatures->store($customer, $signature);
         AuditLog::record('customer.updated', $customer);
 
         return redirect()->route('customers.show', $customer)->with('success', 'Customer details updated.');
