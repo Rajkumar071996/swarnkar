@@ -51,8 +51,9 @@ return [
     | Loan terms
     |--------------------------------------------------------------------------
     |
-    | The rate is an annual percentage. Interest is simple, and a part month is
-    | charged as a full month, which is how the counter has always quoted it.
+    | Stored as an annual percentage. The counter quotes it by the month, so a
+    | 5% monthly rate is saved as 60. Interest is simple, and a part month is
+    | charged as a full month, which is how the counter has always billed it.
     |
     */
 

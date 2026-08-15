@@ -84,7 +84,7 @@
                             <dd class="col-8">{{ money($loan->principal_amount) }}</dd>
 
                             <dt class="col-4">Interest rate</dt>
-                            <dd class="col-8">{{ number_format((float) $loan->interest_rate, 2) }}% per year</dd>
+                            <dd class="col-8">{{ number_format($loan->monthlyInterestRate(), 2) }}% per month</dd>
 
                             <dt class="col-4">Packet No</dt>
                             <dd class="col-8">{{ $loan->packet_no ?: '--' }}</dd>

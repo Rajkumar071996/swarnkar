@@ -76,7 +76,7 @@ class GirviLoanController extends Controller
             'loan_reason' => ['nullable', 'string', 'max:64'],
             'loan_type' => ['nullable', 'string', 'max:64'],
             'estimate_percent' => ['required', 'numeric', 'min:1', 'max:100'],
-            'interest_rate' => ['required', 'numeric', 'min:0', 'max:200'],
+            'interest_rate' => ['required', 'numeric', 'min:0', 'max:30'],
             'principal_amount' => ['required', 'numeric', 'min:1', 'max:99999999'],
             'refer_by' => ['nullable', 'string', 'max:128'],
             'narration' => ['nullable', 'string', 'max:1000'],
@@ -90,6 +90,8 @@ class GirviLoanController extends Controller
             'items.*.rate_per_gram' => ['required', 'numeric', 'min:0', 'max:9999999'],
             'items.*.remarks' => ['nullable', 'string', 'max:255'],
         ]);
+
+        $data['interest_rate'] = round((float) $data['interest_rate'] * 12, 2);
 
         $loan = $this->ledger->deposit($data, $data['items'], $request->user());
 

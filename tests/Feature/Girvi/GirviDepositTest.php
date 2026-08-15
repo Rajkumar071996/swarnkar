@@ -79,6 +79,8 @@ class GirviDepositTest extends TestCase
         $this->assertSame('54960.00', $loan->total_value);
         $this->assertSame('41220.00', $loan->estimate_amount);
         $this->assertSame('40000.00', $loan->principal_amount);
+        $this->assertSame('60.00', $loan->interest_rate);
+        $this->assertSame(5.0, $loan->monthlyInterestRate());
         $this->assertSame('GRT-19/27-1', $loan->receipt_no);
         $this->assertCount(1, $loan->items);
         $this->assertSame($this->user->id, $loan->created_by_user_id);
@@ -255,7 +257,7 @@ class GirviDepositTest extends TestCase
             'loan_type' => 'Ornaments',
             'rate_per_gram' => 6000,
             'estimate_percent' => 75,
-            'interest_rate' => 60,
+            'interest_rate' => 5,
             'principal_amount' => 40000,
             'items' => [
                 [

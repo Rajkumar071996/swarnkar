@@ -113,9 +113,9 @@
                             </div>
 
                             <div class="col-12">
-                                <label for="interest_rate" class="form-label">Interest in % (per year)</label>
+                                <label for="interest_rate" class="form-label">Interest in % (per month)</label>
                                 <input type="number" step="0.01" min="0" id="interest_rate" name="interest_rate"
-                                       value="{{ old('interest_rate', config('girvi.interest_rate')) }}"
+                                       value="{{ old('interest_rate', number_format(config('girvi.interest_rate') / 12, 2, '.', '')) }}"
                                        class="form-control @error('interest_rate') is-invalid @enderror" required>
                                 @error('interest_rate') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>

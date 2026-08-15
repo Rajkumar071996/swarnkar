@@ -102,6 +102,15 @@ class GoldLoan extends Model
         return round((float) $this->principal_amount - (float) $this->principal_repaid, 2);
     }
 
+    /**
+     * The counter quotes interest by the month. The column still stores the
+     * annual figure the calculator uses, so a 5% monthly rate is 60 here.
+     */
+    public function monthlyInterestRate(): float
+    {
+        return round((float) $this->interest_rate / 12, 2);
+    }
+
     public function isReleased(): bool
     {
         return $this->released_on !== null;

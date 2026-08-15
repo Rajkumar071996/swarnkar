@@ -28,7 +28,7 @@
                 <div class="card-body">
                     <div class="text-muted text-uppercase small">Loan amount</div>
                     <div class="h4 mb-0">{{ money($loan->principal_amount) }}</div>
-                    <div class="small text-muted">{{ number_format((float) $loan->interest_rate, 2) }}% per year</div>
+                    <div class="small text-muted">{{ number_format($loan->monthlyInterestRate(), 2) }}% per month</div>
                 </div>
             </div>
         </div>
