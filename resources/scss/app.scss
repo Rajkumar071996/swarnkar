@@ -24,15 +24,13 @@ body {
     min-height: -webkit-fill-available;
 }
 
-body:has(#gsNavToggle:checked) {
+body:has(.gs-mobile-nav:target) {
     overflow: hidden;
 }
 
-button,
-a,
 .btn,
-.nav-link,
-[role="button"] {
+.gs-nav-button,
+.nav-link {
     touch-action: manipulation;
     cursor: pointer;
 }
@@ -87,7 +85,7 @@ a,
 .gs-topbar {
     position: sticky;
     top: 0;
-    z-index: 1055;
+    z-index: 20;
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -106,6 +104,7 @@ a,
 }
 
 .gs-nav-button {
+    flex-shrink: 0;
     min-width: 2.75rem;
     min-height: 2.75rem;
     display: inline-flex;
@@ -113,7 +112,7 @@ a,
     justify-content: center;
     margin: 0;
     color: #fff;
-    cursor: pointer;
+    text-decoration: none;
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -121,32 +120,29 @@ a,
     color: #e9d5ff;
 }
 
-.gs-nav-checkbox {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
-    pointer-events: none;
+.gs-mobile-nav {
+    display: none;
+}
+
+.gs-mobile-nav:target {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1080;
 }
 
 .gs-drawer-backdrop {
-    position: fixed;
+    position: absolute;
     inset: 0;
-    z-index: 1056;
     background: rgba(0, 0, 0, 0.45);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
 }
 
 .gs-offcanvas {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 1060;
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
+    height: 100%;
     background: $gs-shell;
     color: #fff;
     width: min(20rem, 86vw);
@@ -154,21 +150,6 @@ a,
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-    transform: translateX(-110%);
-    transition: transform 0.2s ease;
-    pointer-events: none;
-    visibility: hidden;
-}
-
-#gsNavToggle:checked ~ .gs-drawer-backdrop {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-#gsNavToggle:checked ~ .gs-offcanvas {
-    transform: none;
-    pointer-events: auto;
-    visibility: visible;
 }
 
 .gs-offcanvas .offcanvas-body {
@@ -178,14 +159,18 @@ a,
     padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
 }
 
-.offcanvas:not(.show) {
-    pointer-events: none !important;
-}
-
 .gs-main {
+    position: relative;
+    z-index: 1;
     padding: 1rem;
     padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
     min-width: 0;
+}
+
+@media (min-width: 992px) {
+    .gs-mobile-nav {
+        display: none !important;
+    }
 }
 
 @media (min-width: 768px) {

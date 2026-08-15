@@ -20,13 +20,11 @@
     $moduleHome = $isGirvi ? route('girvi.dashboard') : route('dashboard');
 @endphp
 
-{{-- Mobile nav: CSS checkbox so it works even if JS does not load --}}
-<input type="checkbox" id="gsNavToggle" class="gs-nav-checkbox d-lg-none" autocomplete="off">
-
+{{-- Mobile nav uses :target so it works with no JavaScript and cannot trap taps when closed. --}}
 <header class="gs-topbar d-lg-none">
-    <label for="gsNavToggle" class="gs-nav-button" aria-label="Open menu" role="button">
+    <a href="#gsMobileNav" class="gs-nav-button" aria-label="Open menu">
         <i class="bi bi-list fs-3"></i>
-    </label>
+    </a>
 
     <a href="{{ $moduleHome }}" class="text-white text-decoration-none fw-semibold">
         <i class="bi bi-{{ $moduleIcon }} gs-brand-mark me-1"></i>{{ $moduleName }}
@@ -37,34 +35,35 @@
     </span>
 </header>
 
-<label for="gsNavToggle" class="gs-drawer-backdrop d-lg-none" aria-hidden="true"></label>
-
-<nav class="gs-offcanvas d-lg-none" id="gsMobileNav" aria-labelledby="gsMobileNavLabel">
-    <div class="offcanvas-header border-bottom border-secondary">
-        <h2 class="offcanvas-title h5 text-white mb-0" id="gsMobileNavLabel">
-            <i class="bi bi-{{ $moduleIcon }} gs-brand-mark me-2"></i>{{ $moduleName }}
-        </h2>
-        <label for="gsNavToggle" class="btn-close btn-close-white m-0" role="button" aria-label="Close"></label>
-    </div>
-    <div class="offcanvas-body d-flex flex-column p-3">
-        @include('partials.nav-links', ['dismissOffcanvas' => true])
-
-        <hr class="text-secondary">
-
-        <div class="text-white-50 small px-2 mt-auto">
-            <div class="fw-semibold text-white">{{ auth()->user()->name }}</div>
-            <div>{{ auth()->user()->role->label() }}</div>
-            <div class="mt-1">{{ auth()->user()->store->name }}</div>
+<div id="gsMobileNav" class="gs-mobile-nav">
+    <a href="#gsMain" class="gs-drawer-backdrop" aria-label="Close menu"></a>
+    <nav class="gs-offcanvas" aria-labelledby="gsMobileNavLabel">
+        <div class="offcanvas-header border-bottom border-secondary">
+            <h2 class="offcanvas-title h5 text-white mb-0" id="gsMobileNavLabel">
+                <i class="bi bi-{{ $moduleIcon }} gs-brand-mark me-2"></i>{{ $moduleName }}
+            </h2>
+            <a href="#gsMain" class="btn-close btn-close-white m-0" aria-label="Close"></a>
         </div>
+        <div class="offcanvas-body d-flex flex-column p-3">
+            @include('partials.nav-links', ['dismissOffcanvas' => true])
 
-        <form method="POST" action="{{ route('logout') }}" class="px-2 mt-3">
-            @csrf
-            <button class="btn btn-sm btn-outline-light w-100" type="submit">
-                <i class="bi bi-box-arrow-right me-1"></i>Sign out
-            </button>
-        </form>
-    </div>
-</nav>
+            <hr class="text-secondary">
+
+            <div class="text-white-50 small px-2 mt-auto">
+                <div class="fw-semibold text-white">{{ auth()->user()->name }}</div>
+                <div>{{ auth()->user()->role->label() }}</div>
+                <div class="mt-1">{{ auth()->user()->store->name }}</div>
+            </div>
+
+            <form method="POST" action="{{ route('logout') }}" class="px-2 mt-3">
+                @csrf
+                <button class="btn btn-sm btn-outline-light w-100" type="submit">
+                    <i class="bi bi-box-arrow-right me-1"></i>Sign out
+                </button>
+            </form>
+        </div>
+    </nav>
+</div>
 
 <div class="container-fluid">
     <div class="row">
@@ -93,7 +92,7 @@
             </form>
         </nav>
 
-        <main class="col-12 col-lg-10 gs-main">
+        <main id="gsMain" class="col-12 col-lg-10 gs-main">
             <div class="gs-page-header d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3 mb-3 mb-md-4">
                 <div class="min-w-0">
                     <h1 class="h4 h3-md mb-0 text-break">@yield('heading', 'Dashboard')</h1>
