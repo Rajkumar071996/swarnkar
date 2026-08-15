@@ -19,6 +19,7 @@
                                    placeholder="171, Ramesh, 98765...">
                             <select id="customer_id" name="customer_id" size="6"
                                     class="form-select @error('customer_id') is-invalid @enderror" required>
+                                <option value="">Select a customer</option>
                                 @foreach ($customers as $row)
                                     <option value="{{ $row->id }}"
                                             data-search="{{ Str::lower($row->ledger_no.' '.$row->full_name.' '.$row->mobile) }}"
@@ -402,9 +403,16 @@
 
             document.getElementById('customerFilter').addEventListener('input', (event) => {
                 const needle = event.target.value.trim().toLowerCase();
+                const select = document.getElementById('customer_id');
 
-                document.querySelectorAll('#customer_id option').forEach((option) => {
-                    option.hidden = needle !== '' && !option.dataset.search.includes(needle);
+                select.querySelectorAll('option').forEach((option) => {
+                    if (option.value === '') {
+                        return;
+                    }
+
+                    const hide = needle !== '' && !(option.dataset.search || '').includes(needle);
+                    option.hidden = hide;
+                    option.disabled = hide;
                 });
             });
 

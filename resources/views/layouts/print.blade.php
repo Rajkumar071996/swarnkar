@@ -3,6 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#07153f">
+    <meta name="format-detection" content="telephone=no">
     <title>@yield('title', 'Receipt') &middot; {{ config('app.name') }}</title>
     @vite(['resources/scss/app.scss'])
     <style>

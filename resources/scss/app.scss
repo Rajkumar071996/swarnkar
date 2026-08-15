@@ -14,11 +14,31 @@ $font-family-sans-serif: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-ser
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
 html {
-    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    height: -webkit-fill-available;
 }
 
 body {
-    overflow-x: hidden;
+    overflow-x: clip;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+}
+
+button,
+a,
+.btn,
+.nav-link,
+[role="button"] {
+    touch-action: manipulation;
+    cursor: pointer;
+}
+
+.form-control,
+.form-select,
+.form-control-sm,
+.form-select-sm {
+    font-size: 1rem; // iOS zooms any field under 16px
 }
 
 .container-fluid,
@@ -68,9 +88,9 @@ body {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    min-height: calc(3.25rem + env(safe-area-inset-top));
+    min-height: calc(3.25rem + env(safe-area-inset-top, 0px));
     padding: 0.55rem 1rem;
-    padding-top: max(0.55rem, env(safe-area-inset-top));
+    padding-top: max(0.55rem, env(safe-area-inset-top, 0px));
     background: $gs-shell;
     box-shadow: 0 1px 0 rgba(7, 21, 63, 0.35);
 }
@@ -79,7 +99,20 @@ body {
     margin-left: auto;
     max-width: 40%;
     text-align: right;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
+}
+
+.gs-topbar .btn {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.gs-brand-mark {
+    color: #e9d5ff;
 }
 
 .gs-offcanvas {
@@ -88,9 +121,16 @@ body {
     width: min(20rem, 86vw);
 }
 
+.gs-offcanvas .offcanvas-body {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+}
+
 .gs-main {
     padding: 1rem;
-    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
     min-width: 0;
 }
 
@@ -163,7 +203,7 @@ body {
 .gs-stat-value {
     font-size: clamp(1.05rem, 3.6vw, 1.5rem);
     line-height: 1.25;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
     word-break: break-word;
 }
 
@@ -182,7 +222,7 @@ body {
 
 .gs-wrap {
     white-space: normal !important;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
     min-width: 7.5rem;
 }
 
@@ -247,6 +287,7 @@ body {
 
 .gs-guest-shell {
     min-height: 100vh;
+    min-height: -webkit-fill-available;
     min-height: 100dvh;
     display: flex;
     align-items: center;
@@ -257,7 +298,7 @@ body {
     .gs-guest-shell {
         align-items: flex-start;
         padding: 1rem 0.85rem 1.5rem;
-        padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+        padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 0px));
     }
 }
 
@@ -294,7 +335,7 @@ canvas {
 }
 
 dl {
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
 }
 
 // ---------------------------------------------------------------------------
@@ -316,7 +357,7 @@ dl {
     .table th.gs-wrap,
     .table td.fw-semibold {
         white-space: normal;
-        overflow-wrap: anywhere;
+        overflow-wrap: break-word;
     }
 
     .card-body {
@@ -435,6 +476,6 @@ dl {
     }
 
     .modal-title {
-        overflow-wrap: anywhere;
+        overflow-wrap: break-word;
     }
 }
