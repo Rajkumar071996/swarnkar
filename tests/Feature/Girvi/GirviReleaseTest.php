@@ -218,6 +218,7 @@ class GirviReleaseTest extends TestCase
             ->assertDontSee('per month')
             ->assertSee('Customer Name')
             ->assertSee('Predicted Value')
+            ->assertSee('41220')
             ->assertSee('Print Receipt')
             ->assertSee('we will not take any responsibility if the receipt is lost');
     }

@@ -43,7 +43,7 @@
             </table>
             <div class="gs-slip-totals">
                 <div>Total weight : {{ number_format((float) $loan->gross_weight_grams, 3) }}</div>
-                <div>Predicted Value : {{ number_format((float) $loan->total_value, 0, '.', '') }}</div>
+                <div>Predicted Value : {{ number_format((float) $loan->estimate_amount, 0, '.', '') }}</div>
             </div>
         </li>
         <li><span>Document Description, If any</span> : {{ $loan->packet_no ?: '' }}</li>
