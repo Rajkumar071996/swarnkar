@@ -65,7 +65,9 @@
             flex-direction: column;
             justify-content: space-between;
             padding-left: 1.15rem;
+            padding-top: 0.45rem;
             margin: 0;
+            border-top: 1.5px solid #111;
         }
 
         .gs-slip-fields > li {
