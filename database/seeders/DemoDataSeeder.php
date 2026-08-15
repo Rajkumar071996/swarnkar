@@ -51,6 +51,9 @@ class DemoDataSeeder extends Seeder
             'city' => 'Jaipur',
             'state' => 'Rajasthan',
             'pincode' => '302003',
+            'opening_capital' => 1500000,
+            'cash_in_hand' => 500000,
+            'bank_balance' => 1000000,
         ]);
 
         // A second store exists so cross-store scoring and merchant
@@ -60,6 +63,9 @@ class DemoDataSeeder extends Seeder
             'city' => 'Ajmer',
             'state' => 'Rajasthan',
             'phone' => '9829099887',
+            'opening_capital' => 800000,
+            'cash_in_hand' => 200000,
+            'bank_balance' => 600000,
         ]);
 
         $this->createUsers();

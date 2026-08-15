@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
@@ -43,13 +44,26 @@ class RegisterController extends Controller
             'phone' => MobileNumber::rules(unique: true),
             'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::defaults()],
+            'opening_capital' => ['required', 'numeric', 'min:0', 'max:999999999'],
+            'cash_in_hand' => ['required', 'numeric', 'min:0', 'max:999999999'],
+            'bank_balance' => ['required', 'numeric', 'min:0', 'max:999999999'],
         ], [
             'phone.regex' => 'Enter a valid 10-digit Indian mobile number.',
             'phone.unique' => 'An account with this mobile number already exists. Sign in instead.',
             'pincode.regex' => 'Enter a valid 6-digit PIN code.',
         ]);
 
-        $user = DB::transaction(function () use ($data) {
+        $capital = round((float) $data['opening_capital'], 2);
+        $cash = round((float) $data['cash_in_hand'], 2);
+        $bank = round((float) $data['bank_balance'], 2);
+
+        if (abs(($cash + $bank) - $capital) > 0.009) {
+            throw ValidationException::withMessages([
+                'opening_capital' => 'Cash in hand and bank should add up to capital.',
+            ]);
+        }
+
+        $user = DB::transaction(function () use ($data, $capital, $cash, $bank) {
             $store = Store::create([
                 'name' => $data['store_name'],
                 'phone' => $data['phone'],
@@ -58,6 +72,9 @@ class RegisterController extends Controller
                 'city' => $data['city'],
                 'state' => $data['state'],
                 'pincode' => $data['pincode'],
+                'opening_capital' => $capital,
+                'cash_in_hand' => $cash,
+                'bank_balance' => $bank,
             ]);
 
             $user = User::create([

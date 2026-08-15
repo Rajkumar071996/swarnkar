@@ -9,8 +9,9 @@ use App\Http\Controllers\Girvi\GirviDashboardController;
 use App\Http\Controllers\Girvi\GirviLoanController;
 use App\Http\Controllers\Girvi\GirviReleaseController;
 use App\Http\Controllers\Girvi\GirviSettingsController;
-use App\Http\Controllers\LookupController;
 use App\Http\Controllers\KhataController;
+use App\Http\Controllers\LookupController;
+use App\Http\Controllers\ShopBooksController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\UdhaarController;
 use Illuminate\Support\Facades\Route;
@@ -31,6 +32,10 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::post('logout', [LoginController::class, 'destroy'])->name('logout');
 
     Route::get('/', DashboardController::class)->name('dashboard');
+
+    Route::get('books', [ShopBooksController::class, 'index'])->name('books.index');
+    Route::put('books', [ShopBooksController::class, 'update'])->name('books.update');
+    Route::post('books/expenses', [ShopBooksController::class, 'storeExpense'])->name('books.expenses.store');
 
     // Consent-gated credit check.
     Route::get('lookup', [LookupController::class, 'index'])->name('lookup.index');

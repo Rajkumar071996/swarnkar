@@ -8,6 +8,7 @@ use App\Models\AuditLog;
 use App\Models\GoldLoan;
 use App\Models\GoldLoanPayment;
 use App\Models\User;
+use App\Services\StoreBooks;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -25,6 +26,7 @@ class GirviLedger
         private readonly GoldValuation $valuation,
         private readonly InterestCalculator $interest,
         private readonly ReceiptNumber $receipts,
+        private readonly StoreBooks $books,
     ) {}
 
     /**
@@ -95,6 +97,8 @@ class GirviLedger
 
             $loan->items()->createMany($priced['items']);
 
+            $this->books->debit($user->store, 'cash', $principal, 'principal_amount');
+
             AuditLog::record('girvi.deposited', $loan, [
                 'customer_id' => $loan->customer_id,
                 'principal' => $principal,
@@ -139,6 +143,8 @@ class GirviLedger
 
             $loan->interest_collected = round((float) $loan->interest_collected + $amount, 2);
             $loan->save();
+
+            $this->books->credit($loan->store, $this->books->walletForMethod($method), $amount);
 
             AuditLog::record('girvi.interest_collected', $loan, ['amount' => $amount]);
 
@@ -188,6 +194,8 @@ class GirviLedger
                 'closed_on' => $releaseOn,
                 'status' => GoldLoanStatus::Closed,
             ])->save();
+
+            $this->books->credit($loan->store, 'cash', $summary['total']);
 
             AuditLog::record('girvi.released', $loan, [
                 'total' => $summary['total'],

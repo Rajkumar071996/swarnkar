@@ -14,6 +14,8 @@
 @endsection
 
 @section('content')
+    @include('partials.books-cards')
+
     <div class="row g-3 mb-4">
         @foreach ([
             ['label' => 'Money out', 'value' => money($stats['money_out']), 'icon' => 'cash-stack', 'tone' => '', 'hint' => 'On unreleased pledges'],

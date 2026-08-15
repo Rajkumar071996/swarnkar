@@ -49,6 +49,12 @@
             </a>
         </li>
         <li class="nav-item">
+            <a href="{{ route('books.index') }}" class="nav-link @active('books.*')"
+               @if (! empty($dismissOffcanvas)) data-bs-dismiss="offcanvas" @endif>
+                <i class="bi bi-journal-text me-2"></i>Shop books
+            </a>
+        </li>
+        <li class="nav-item">
             <a href="{{ route('girvi.settings.edit') }}" class="nav-link @active('girvi.settings.*')"
                @if (! empty($dismissOffcanvas)) data-bs-dismiss="offcanvas" @endif>
                 <i class="bi bi-sliders me-2"></i>Settings

@@ -114,7 +114,10 @@ class GirviReleaseTest extends TestCase
 
         // 40,000 principal plus 6,000 interest plus 500 extra plus 100 notice less 200 discount.
         $this->assertSame('46400.00', $this->loan->payments()->where('type', 'principal')->value('amount'));
-        $this->assertSame('GRS-19/27-1', $this->loan->payments()->where('type', 'principal')->value('receipt_no'));
+        $this->assertMatchesRegularExpression(
+            '/^GRS-19\/27-\d{3,4}$/',
+            $this->loan->payments()->where('type', 'principal')->value('receipt_no'),
+        );
     }
 
     #[Test]
@@ -132,6 +135,29 @@ class GirviReleaseTest extends TestCase
 
         $this->assertSame('44000.00', $this->loan->payments()->where('type', 'principal')->value('amount'));
         $this->assertSame('6000.00', $this->loan->refresh()->interest_collected);
+    }
+
+    #[Test]
+    public function cash_interest_goes_in_the_till_and_upi_goes_to_the_bank(): void
+    {
+        $this->actingAs($this->user)->post(route('girvi.loans.interest', $this->loan), [
+            'amount' => 2000,
+            'paid_on' => '2026-02-01',
+            'method' => 'cash',
+        ]);
+
+        $this->assertSame('402000.00', $this->user->store->fresh()->cash_in_hand);
+
+        $this->actingAs($this->user)->post(route('girvi.loans.interest', $this->loan), [
+            'amount' => 500,
+            'paid_on' => '2026-02-15',
+            'method' => 'upi',
+        ]);
+
+        $store = $this->user->store->fresh();
+
+        $this->assertSame('402000.00', $store->cash_in_hand);
+        $this->assertSame('600500.00', $store->bank_balance);
     }
 
     #[Test]
@@ -155,7 +181,7 @@ class GirviReleaseTest extends TestCase
             ->get(route('girvi.release.receipt', $this->loan))
             ->assertOk()
             ->assertSee('Release Receipt')
-            ->assertSee('GRS-19/27-1');
+            ->assertSee($this->loan->payments()->where('type', 'principal')->value('receipt_no'));
     }
 
     #[Test]

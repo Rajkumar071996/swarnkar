@@ -6,12 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\GoldLoan;
 use App\Models\GoldLoanItem;
 use App\Models\GoldLoanPayment;
+use App\Services\StoreBooks;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 
 class GirviDashboardController extends Controller
 {
+    public function __construct(private readonly StoreBooks $books) {}
+
     public function __invoke(Request $request): View
     {
         $this->authorize('viewAny', GoldLoan::class);
@@ -53,6 +56,7 @@ class GirviDashboardController extends Controller
             ],
             'dueSoon' => $dueSoon,
             'overdue' => $overdue,
+            'books' => $this->books->snapshot($request->user()->store),
         ]);
     }
 }

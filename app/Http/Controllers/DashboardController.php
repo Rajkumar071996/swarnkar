@@ -6,12 +6,15 @@ use App\Enums\RiskBand;
 use App\Models\Customer;
 use App\Models\KhataAdvance;
 use App\Models\Udhaar;
+use App\Services\StoreBooks;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
+    public function __construct(private readonly StoreBooks $books) {}
+
     public function __invoke(Request $request): View
     {
         $today = Carbon::today();
@@ -67,6 +70,7 @@ class DashboardController extends Controller
             'overdueUdhaars' => $overdueUdhaars,
             'advanceHeld' => $advanceHeld,
             'riskMix' => $this->riskMix($storeId),
+            'books' => $this->books->snapshot($request->user()->store),
         ]);
     }
 

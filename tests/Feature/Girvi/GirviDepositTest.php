@@ -81,9 +81,14 @@ class GirviDepositTest extends TestCase
         $this->assertSame('40000.00', $loan->principal_amount);
         $this->assertSame('60.00', $loan->interest_rate);
         $this->assertSame(5.0, $loan->monthlyInterestRate());
-        $this->assertSame('GRT-19/27-1', $loan->receipt_no);
+        $this->assertMatchesRegularExpression('/^GRT-19\/27-\d{3,4}$/', $loan->receipt_no);
         $this->assertCount(1, $loan->items);
         $this->assertSame($this->user->id, $loan->created_by_user_id);
+
+        $this->user->store->refresh();
+        $this->assertSame('360000.00', $this->user->store->cash_in_hand);
+        $this->assertSame('600000.00', $this->user->store->bank_balance);
+        $this->assertSame('1000000.00', $this->user->store->opening_capital);
     }
 
     #[Test]
@@ -122,7 +127,7 @@ class GirviDepositTest extends TestCase
             ->get(route('girvi.loans.show', $loan))
             ->assertOk()
             ->assertSee($this->customer->full_name)
-            ->assertSee('GRT-19/27-1')
+            ->assertSee($loan->receipt_no)
             ->assertSee('Chain')
             ->assertSee('Print Receipt')
             ->assertSee('Collect interest');
@@ -194,15 +199,15 @@ class GirviDepositTest extends TestCase
     }
 
     #[Test]
-    public function receipt_numbers_run_in_sequence_per_store(): void
+    public function receipt_numbers_are_random_per_store(): void
     {
         $this->actingAs($this->user)->post(route('girvi.loans.store'), $this->payload());
         $this->actingAs($this->user)->post(route('girvi.loans.store'), $this->payload());
 
-        $this->assertSame(
-            ['GRT-19/27-1', 'GRT-19/27-2'],
-            GoldLoan::query()->orderBy('id')->pluck('receipt_no')->all(),
-        );
+        $numbers = GoldLoan::query()->orderBy('id')->pluck('receipt_no');
+
+        $this->assertCount(2, $numbers->unique());
+        $numbers->each(fn (string $number) => $this->assertMatchesRegularExpression('/^GRT-19\/27-\d{3,4}$/', $number));
 
         $other = User::factory()->owner()->create();
         $shared = Customer::factory()->create();
@@ -212,8 +217,8 @@ class GirviDepositTest extends TestCase
             'customer_id' => $shared->id,
         ]));
 
-        $this->assertSame(
-            'GRT-19/27-1',
+        $this->assertMatchesRegularExpression(
+            '/^GRT-19\/27-\d{3,4}$/',
             GoldLoan::withoutGlobalScopes()->where('store_id', $other->store_id)->value('receipt_no'),
         );
     }

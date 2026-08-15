@@ -58,6 +58,50 @@
             @enderror
         </div>
 
+        <h2 class="h6 text-uppercase text-muted mb-3">Opening books</h2>
+
+        <p class="text-muted small">Cash in hand and bank should add up to the capital you are starting with.</p>
+
+        <div class="mb-3">
+            <label for="opening_capital" class="form-label">Capital</label>
+            <div class="input-group">
+                <span class="input-group-text">₹</span>
+                <input type="number" step="0.01" min="0" id="opening_capital" name="opening_capital"
+                       value="{{ old('opening_capital') }}"
+                       class="form-control @error('opening_capital') is-invalid @enderror" required>
+                @error('opening_capital')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+        </div>
+
+        <div class="row g-2 mb-4">
+            <div class="col-6">
+                <label for="cash_in_hand" class="form-label">Cash in hand</label>
+                <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" step="0.01" min="0" id="cash_in_hand" name="cash_in_hand"
+                           value="{{ old('cash_in_hand') }}"
+                           class="form-control @error('cash_in_hand') is-invalid @enderror" required>
+                    @error('cash_in_hand')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+            <div class="col-6">
+                <label for="bank_balance" class="form-label">Bank</label>
+                <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" step="0.01" min="0" id="bank_balance" name="bank_balance"
+                           value="{{ old('bank_balance') }}"
+                           class="form-control @error('bank_balance') is-invalid @enderror" required>
+                    @error('bank_balance')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+        </div>
+
         <h2 class="h6 text-uppercase text-muted mb-3">Owner account</h2>
 
         <div class="mb-3">
@@ -113,4 +157,21 @@
         Already have an account?
         <a href="{{ route('login') }}">Sign in</a>
     </p>
+
+    <script>
+        (function () {
+            const capital = document.getElementById('opening_capital');
+            const cash = document.getElementById('cash_in_hand');
+            const bank = document.getElementById('bank_balance');
+            if (!capital || !cash || !bank) return;
+
+            const sum = () => {
+                const total = (parseFloat(cash.value) || 0) + (parseFloat(bank.value) || 0);
+                capital.value = total.toFixed(2);
+            };
+
+            cash.addEventListener('input', sum);
+            bank.addEventListener('input', sum);
+        })();
+    </script>
 @endsection

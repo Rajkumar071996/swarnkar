@@ -7,9 +7,9 @@ return [
     | Receipt numbering
     |--------------------------------------------------------------------------
     |
-    | Deposits are booked as GRT-19/27-4 and releases as GRS-19/27-17, matching
-    | the numbering the counter already reads out loud. The serial runs per
-    | store and per book, so two shops never collide.
+    | Deposits are booked as GRT-19/27-258 and releases as GRS-19/27-417. The
+    | last figure is random per store rather than a running serial, so the
+    | printed slip does not advertise how many pledges the shop has taken.
     |
     */
 

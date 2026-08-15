@@ -33,6 +33,9 @@ class StoreFactory extends Factory
             'state' => $state,
             'pincode' => fake()->numerify('######'),
             'is_active' => true,
+            'opening_capital' => 1000000,
+            'cash_in_hand' => 400000,
+            'bank_balance' => 600000,
         ];
     }
 }

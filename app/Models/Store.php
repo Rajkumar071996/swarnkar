@@ -15,16 +15,27 @@ class Store extends Model
     protected $fillable = [
         'name', 'legal_name', 'gstin', 'phone', 'email',
         'address_line', 'city', 'state', 'pincode', 'is_active',
+        'opening_capital', 'cash_in_hand', 'bank_balance',
     ];
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean'];
+        return [
+            'is_active' => 'boolean',
+            'opening_capital' => 'decimal:2',
+            'cash_in_hand' => 'decimal:2',
+            'bank_balance' => 'decimal:2',
+        ];
     }
 
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
+    }
+
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(StoreExpense::class);
     }
 
     /**

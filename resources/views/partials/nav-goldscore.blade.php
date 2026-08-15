@@ -42,5 +42,11 @@
                 <i class="bi bi-person-badge me-2"></i>Staff
             </a>
         </li>
+        <li class="nav-item">
+            <a href="{{ route('books.index') }}" class="nav-link @active('books.*')"
+               @if (! empty($dismissOffcanvas)) data-bs-dismiss="offcanvas" @endif>
+                <i class="bi bi-journal-text me-2"></i>Shop books
+            </a>
+        </li>
     @endcan
 </ul>

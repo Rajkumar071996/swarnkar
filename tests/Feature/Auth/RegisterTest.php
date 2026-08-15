@@ -41,7 +41,20 @@ class RegisterTest extends TestCase
         $this->assertSame('Rajasthan', $user->store->state);
         $this->assertSame('302003', $user->store->pincode);
         $this->assertSame('9829012345', $user->store->phone);
+        $this->assertSame('1000000.00', $user->store->opening_capital);
+        $this->assertSame('400000.00', $user->store->cash_in_hand);
+        $this->assertSame('600000.00', $user->store->bank_balance);
         $this->assertSame(1, Store::count());
+
+        $this->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Capital')
+            ->assertSee(money(1000000), false)
+            ->assertSee('Cash in hand')
+            ->assertSee(money(400000), false)
+            ->assertSee('Bank')
+            ->assertSee(money(600000), false)
+            ->assertSee('Expenses');
     }
 
     #[Test]
@@ -51,7 +64,11 @@ class RegisterTest extends TestCase
             ->assertOk()
             ->assertSee('Shop address')
             ->assertSee('name="address_line"', false)
-            ->assertSee('name="pincode"', false);
+            ->assertSee('name="pincode"', false)
+            ->assertSee('Opening books')
+            ->assertSee('name="opening_capital"', false)
+            ->assertSee('name="cash_in_hand"', false)
+            ->assertSee('name="bank_balance"', false);
     }
 
     #[Test]
@@ -61,6 +78,24 @@ class RegisterTest extends TestCase
             'address_line' => '',
             'pincode' => '',
         ]))->assertSessionHasErrors(['address_line', 'pincode']);
+
+        $this->assertGuest();
+    }
+
+    #[Test]
+    public function registration_requires_opening_books_that_add_up(): void
+    {
+        $this->post(route('register.store'), $this->validPayload([
+            'opening_capital' => '',
+            'cash_in_hand' => '',
+            'bank_balance' => '',
+        ]))->assertSessionHasErrors(['opening_capital', 'cash_in_hand', 'bank_balance']);
+
+        $this->post(route('register.store'), $this->validPayload([
+            'opening_capital' => 1000000,
+            'cash_in_hand' => 400000,
+            'bank_balance' => 500000,
+        ]))->assertSessionHasErrors('opening_capital');
 
         $this->assertGuest();
     }
@@ -104,6 +139,9 @@ class RegisterTest extends TestCase
             'phone' => '9829012345',
             'password' => 'password',
             'password_confirmation' => 'password',
+            'opening_capital' => 1000000,
+            'cash_in_hand' => 400000,
+            'bank_balance' => 600000,
         ], $overrides);
     }
 

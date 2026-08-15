@@ -11,6 +11,8 @@
 @endsection
 
 @section('content')
+    @include('partials.books-cards')
+
     <div class="row g-3 mb-4">
         @foreach ([
             ['label' => 'Khata outstanding', 'value' => money($stats['outstanding']), 'icon' => 'journal-bookmark', 'tone' => '', 'hint' => null],
