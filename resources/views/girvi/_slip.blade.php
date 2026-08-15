@@ -18,7 +18,7 @@
         <li><span>Loan Amount Rs.</span> : {{ number_format((float) $loan->principal_amount, 0, '.', '') }}</li>
         <li><span>Loan Date</span> : {{ $loan->disbursed_on->format('d/m/Y') }}</li>
         <li><span>Valid For</span> : {{ $loan->due_on->format('d/m/Y') }}</li>
-        <li><span>Loan Interest rate</span> : {{ number_format($loan->monthlyInterestRate(), 2) }}% per month</li>
+        <li><span>Loan Interest rate</span> : {{ number_format($loan->monthlyInterestRate(), 2) }}%</li>
         <li>
             <span>Ornament Description</span> :
             <table class="gs-slip-items">

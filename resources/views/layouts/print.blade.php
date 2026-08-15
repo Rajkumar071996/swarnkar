@@ -18,9 +18,9 @@
             flex: 1 1 50%;
             width: 50%;
             border: 1.5px solid #111;
-            padding: 0.45rem 0.55rem 0.6rem;
-            font-size: 0.72rem;
-            line-height: 1.28;
+            padding: 0.55rem 0.65rem 0.55rem;
+            font-size: 0.78rem;
+            line-height: 1.4;
             color: #111;
             display: flex;
             flex-direction: column;
@@ -36,13 +36,13 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.04em;
-            font-size: 0.68rem;
-            margin-bottom: 0.2rem;
+            font-size: 0.72rem;
+            margin-bottom: 0.45rem;
         }
 
         .gs-slip-header {
             text-align: center;
-            margin-bottom: 0.4rem;
+            margin-bottom: 0.7rem;
         }
 
         .gs-slip-shop {
@@ -55,41 +55,46 @@
             display: flex;
             justify-content: space-between;
             gap: 0.35rem;
-            margin-top: 0.2rem;
+            margin-top: 0.35rem;
             font-weight: 600;
         }
 
         .gs-slip-fields {
-            padding-left: 1.05rem;
-            margin: 0 0 0.4rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding-left: 1.15rem;
+            margin: 0;
         }
 
         .gs-slip-fields > li {
-            margin-bottom: 0.12rem;
+            margin: 0;
+            padding: 0.18rem 0;
         }
 
         .gs-slip-items {
             width: 100%;
-            margin-top: 0.2rem;
+            margin-top: 0.35rem;
             border-collapse: collapse;
         }
 
         .gs-slip-items th,
         .gs-slip-items td {
             border: 1px solid #111;
-            padding: 0.12rem 0.22rem;
-            font-size: 0.68rem;
+            padding: 0.18rem 0.28rem;
+            font-size: 0.72rem;
         }
 
         .gs-slip-totals {
-            margin-top: 0.25rem;
+            margin-top: 0.4rem;
         }
 
         .gs-slip-signs {
             display: flex;
             justify-content: space-between;
-            margin-top: auto;
-            padding-top: 1.1rem;
+            margin-top: 0.85rem;
+            padding-top: 0.35rem;
             font-weight: 600;
         }
 
