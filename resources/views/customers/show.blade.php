@@ -5,14 +5,12 @@
 @section('subheading', 'Customer profile and ledger history at your store.')
 
 @section('actions')
-    <div class="d-flex gap-2">
-        <a href="{{ route('lookup.index', ['q' => $customer->maskedMobile()]) }}" class="btn btn-primary">
-            <i class="bi bi-shield-check me-1"></i>Check GoldScore
-        </a>
-        @can('update', $customer)
-            <a href="{{ route('customers.edit', $customer) }}" class="btn btn-outline-secondary">Edit</a>
-        @endcan
-    </div>
+    <a href="{{ route('lookup.index', ['q' => $customer->maskedMobile()]) }}" class="btn btn-primary">
+        <i class="bi bi-shield-check me-1"></i>Check GoldScore
+    </a>
+    @can('update', $customer)
+        <a href="{{ route('customers.edit', $customer) }}" class="btn btn-outline-secondary">Edit</a>
+    @endcan
 @endsection
 
 @section('content')
@@ -56,7 +54,7 @@
             <div class="card gs-stat-card mb-3">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <span class="fw-semibold">Udhar khata at your store</span>
-                    <div class="d-flex gap-2">
+                    <div class="d-flex flex-wrap gap-2">
                         <a href="{{ route('khata.show', $customer) }}"
                            class="btn btn-sm btn-outline-secondary">Open khata</a>
                         @can('create', App\Models\Udhaar::class)
@@ -71,9 +69,9 @@
                         <tr>
                             <th>Issued</th>
                             <th>Item</th>
-                            <th class="text-end">Principal</th>
+                            <th class="text-end d-none d-md-table-cell">Principal</th>
                             <th class="text-end">Outstanding</th>
-                            <th>Status</th>
+                            <th class="d-none d-sm-table-cell">Status</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -83,9 +81,9 @@
                                 <td>
                                     <a href="{{ route('udhaars.show', $udhaar) }}">{{ $udhaar->item_description }}</a>
                                 </td>
-                                <td class="text-end">{{ money($udhaar->principal_amount) }}</td>
+                                <td class="text-end d-none d-md-table-cell">{{ money($udhaar->principal_amount) }}</td>
                                 <td class="text-end">{{ money($udhaar->outstandingAmount()) }}</td>
-                                <td><span class="badge {{ $udhaar->status->badgeClass() }}">{{ $udhaar->status->label() }}</span></td>
+                                <td class="d-none d-sm-table-cell"><span class="badge {{ $udhaar->status->badgeClass() }}">{{ $udhaar->status->label() }}</span></td>
                             </tr>
                         @empty
                             <tr><td colspan="5" class="text-center text-muted py-3">No store credit recorded.</td></tr>

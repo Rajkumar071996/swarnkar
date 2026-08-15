@@ -2,7 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>@yield('title', 'Receipt') &middot; {{ config('app.name') }}</title>
     @vite(['resources/scss/app.scss'])
     <style>
@@ -120,17 +120,51 @@
                 width: 100%;
                 min-height: auto;
                 height: 136mm;
+                flex-direction: row;
+            }
+            .gs-slip {
+                width: 50%;
+                flex: 1 1 50%;
+            }
+        }
+
+        @media screen and (max-width: 767.98px) {
+            .gs-print-wrap {
+                max-width: 100% !important;
+                padding: 1rem !important;
+                padding-bottom: max(1rem, env(safe-area-inset-bottom)) !important;
+            }
+            .gs-print-sheet {
+                flex-direction: column;
+                width: 100%;
+                min-height: 0;
+            }
+            .gs-slip {
+                width: 100%;
+                flex: none;
+            }
+            .gs-slip + .gs-slip {
+                border-left-style: solid;
+                border-top: 1.5px dashed #111;
+                margin-left: 0;
+            }
+            .gs-no-print {
+                flex-direction: column;
+                align-items: stretch !important;
+            }
+            .gs-no-print .btn {
+                width: 100%;
             }
         }
     </style>
 </head>
 <body class="bg-white">
 <div class="container py-4 gs-print-wrap" style="max-width: 230mm;">
-    <div class="gs-no-print d-flex justify-content-between align-items-center mb-3">
+    <div class="gs-no-print d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
         <a href="{{ $backUrl ?? url()->previous() }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i>Back
         </a>
-        <div class="small text-muted">A5 landscape · two copies</div>
+        <div class="small text-muted d-none d-sm-block">A5 landscape · two copies</div>
         <button type="button" class="btn btn-primary" onclick="window.print()">
             <i class="bi bi-printer me-1"></i>Print Receipt
         </button>

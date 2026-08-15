@@ -21,7 +21,7 @@
                                 <input type="number" step="0.01" min="0" id="gold" name="gold"
                                        value="{{ old('gold', $rates['gold']) }}"
                                        class="form-control @error('gold') is-invalid @enderror" required>
-                                <span class="input-group-text">per gram</span>
+                                <span class="input-group-text d-none d-sm-flex">per gram</span>
                                 @error('gold') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                         </div>
@@ -33,7 +33,7 @@
                                 <input type="number" step="0.01" min="0" id="silver" name="silver"
                                        value="{{ old('silver', $rates['silver']) }}"
                                        class="form-control @error('silver') is-invalid @enderror" required>
-                                <span class="input-group-text">per gram</span>
+                                <span class="input-group-text d-none d-sm-flex">per gram</span>
                                 @error('silver') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                         </div>
@@ -57,7 +57,7 @@
                 <div class="table-responsive">
                     <table class="table table-sm align-middle mb-0">
                         <thead class="table-light">
-                        <tr><th>Date</th><th>Metal</th><th class="text-end">Rate</th><th>Set by</th></tr>
+                        <tr><th>Date</th><th>Metal</th><th class="text-end">Rate</th><th class="d-none d-md-table-cell">Set by</th></tr>
                         </thead>
                         <tbody>
                         @forelse ($history as $rate)
@@ -65,7 +65,7 @@
                                 <td class="small">{{ $rate->effective_on->format('d M Y') }}</td>
                                 <td>{{ $rate->metalLabel() }}</td>
                                 <td class="text-end">{{ money($rate->rate_per_gram) }}</td>
-                                <td class="small text-muted">{{ $rate->updatedBy?->name ?? '--' }}</td>
+                                <td class="small text-muted d-none d-md-table-cell">{{ $rate->updatedBy?->name ?? '--' }}</td>
                             </tr>
                         @empty
                             <tr>

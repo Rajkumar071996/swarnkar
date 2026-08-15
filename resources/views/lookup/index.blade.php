@@ -35,7 +35,7 @@
             </div>
             <div class="list-group list-group-flush">
                 @foreach ($results as $customer)
-                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="list-group-item d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
                         <div>
                             <div class="fw-semibold">{{ $customer->full_name }}</div>
                             <div class="text-muted small font-monospace">

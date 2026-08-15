@@ -55,7 +55,8 @@
                             {{ config('goldscore.consent.grant_ttl_minutes') }} minutes once they approve.
                         </p>
 
-                        <form method="POST" action="{{ route('lookup.consent.request', $customer) }}">
+                        <form method="POST" action="{{ route('lookup.consent.request', $customer) }}"
+                              class="d-flex flex-column flex-sm-row gap-2 gs-form-actions">
                             @csrf
                             <button class="btn btn-primary btn-lg">
                                 <i class="bi bi-send me-1"></i>Send consent code

@@ -81,15 +81,15 @@
                 <div class="table-responsive">
                     <table class="table table-sm align-middle mb-0">
                         <thead class="table-light">
-                        <tr><th>Date</th><th>Type</th><th>Method</th><th>Receipt</th><th class="text-end">Amount</th></tr>
+                        <tr><th>Date</th><th>Type</th><th class="d-none d-md-table-cell">Method</th><th class="d-none d-lg-table-cell">Receipt</th><th class="text-end">Amount</th></tr>
                         </thead>
                         <tbody>
                         @forelse ($loan->payments->sortByDesc('paid_on') as $payment)
                             <tr>
                                 <td class="small">{{ $payment->paid_on->format('d M y') }}</td>
                                 <td><span class="badge bg-secondary">{{ Str::headline($payment->type) }}</span></td>
-                                <td class="small">{{ Str::headline($payment->method) }}</td>
-                                <td class="small font-monospace">{{ $payment->receipt_no ?: '--' }}</td>
+                                <td class="small d-none d-md-table-cell">{{ Str::headline($payment->method) }}</td>
+                                <td class="small font-monospace d-none d-lg-table-cell">{{ $payment->receipt_no ?: '--' }}</td>
                                 <td class="text-end text-success">{{ money($payment->amount) }}</td>
                             </tr>
                         @empty

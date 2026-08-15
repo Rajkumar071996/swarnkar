@@ -53,7 +53,7 @@
                             @error('narration') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary w-100">
                             <i class="bi bi-check2 me-1"></i>Save expense
                         </button>
                     </form>
@@ -117,7 +117,7 @@
                             @error('income_narration') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
-                        <button type="submit" class="btn btn-success">
+                        <button type="submit" class="btn btn-success w-100">
                             <i class="bi bi-check2 me-1"></i>Save income
                         </button>
                     </form>
@@ -134,7 +134,7 @@
                     @csrf
                     @method('PUT')
 
-                    <div class="col-md-3">
+                    <div class="col-12 col-sm-6 col-lg-3">
                         <label for="opening_capital" class="form-label">Capital</label>
                         <div class="input-group">
                             <span class="input-group-text">₹</span>
@@ -145,7 +145,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-12 col-sm-6 col-lg-3">
                         <label for="cash_in_hand" class="form-label">Cash in hand</label>
                         <div class="input-group">
                             <span class="input-group-text">₹</span>
@@ -156,7 +156,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-12 col-sm-6 col-lg-3">
                         <label for="bank_balance" class="form-label">Bank</label>
                         <div class="input-group">
                             <span class="input-group-text">₹</span>
@@ -167,8 +167,8 @@
                         </div>
                     </div>
 
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-outline-primary">Save books</button>
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <button type="submit" class="btn btn-outline-primary w-100">Save books</button>
                     </div>
                 </form>
                 <p class="form-text mb-0 mt-2">This can only be saved once. After that, cash and bank move through income, expenses and girvi.</p>
@@ -184,8 +184,8 @@
                 <tr>
                     <th>Date</th>
                     <th>Remark</th>
-                    <th>Type</th>
-                    <th>Wallet</th>
+                    <th class="d-none d-sm-table-cell">Type</th>
+                    <th class="d-none d-md-table-cell">Wallet</th>
                     <th class="text-end">Amount</th>
                 </tr>
                 </thead>
@@ -193,15 +193,15 @@
                 @forelse ($entries as $entry)
                     <tr>
                         <td class="small">{{ $entry->on->format('d M Y') }}</td>
-                        <td>{{ $entry->narration }}</td>
-                        <td class="small">
+                        <td class="gs-wrap">{{ $entry->narration }}</td>
+                        <td class="small d-none d-sm-table-cell">
                             @if ($entry->direction === 'in')
                                 <span class="text-success">{{ $entry->kind === 'investment' ? 'Investment' : 'Income' }}</span>
                             @else
                                 <span class="text-danger">Expense</span>
                             @endif
                         </td>
-                        <td class="small text-muted">{{ $entry->wallet === 'bank' ? 'Bank' : 'Cash' }}</td>
+                        <td class="small text-muted d-none d-md-table-cell">{{ $entry->wallet === 'bank' ? 'Bank' : 'Cash' }}</td>
                         <td class="text-end {{ $entry->direction === 'in' ? 'text-success' : 'text-danger' }}">
                             {{ $entry->direction === 'in' ? '+' : '−' }}{{ money($entry->amount) }}
                         </td>

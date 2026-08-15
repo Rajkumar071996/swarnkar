@@ -17,7 +17,7 @@
 
 @section('content')
     <div class="row g-3 mb-3">
-        <div class="col-md-4">
+        <div class="col-6 col-md-4">
             <div class="card gs-stat-card">
                 <div class="card-body">
                     <div class="text-muted text-uppercase small">Total outstanding</div>
@@ -25,7 +25,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-6 col-md-4">
             <div class="card gs-stat-card">
                 <div class="card-body">
                     <div class="text-muted text-uppercase small">Past due date</div>
@@ -33,7 +33,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-6 col-md-4">
             <div class="card gs-stat-card">
                 <div class="card-body">
                     <div class="text-muted text-uppercase small">Open khatas</div>

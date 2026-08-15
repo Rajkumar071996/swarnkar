@@ -133,15 +133,15 @@
                 <div class="table-responsive">
                     <table class="table table-sm align-middle mb-0">
                         <thead class="table-light">
-                        <tr><th>Date</th><th>Method</th><th>Reference</th><th>Recorded by</th><th class="text-end">Amount</th></tr>
+                        <tr><th>Date</th><th>Method</th><th class="d-none d-md-table-cell">Reference</th><th class="d-none d-lg-table-cell">Recorded by</th><th class="text-end">Amount</th></tr>
                         </thead>
                         <tbody>
                         @forelse ($udhaar->payments->sortByDesc('paid_on') as $payment)
                             <tr>
                                 <td>{{ $payment->paid_on->format('d M Y') }}</td>
                                 <td>{{ Str::headline($payment->method) }}</td>
-                                <td class="font-monospace small">{{ $payment->reference ?: '--' }}</td>
-                                <td class="small text-muted">{{ $payment->recordedBy?->name ?: '--' }}</td>
+                                <td class="font-monospace small d-none d-md-table-cell">{{ $payment->reference ?: '--' }}</td>
+                                <td class="small text-muted d-none d-lg-table-cell">{{ $payment->recordedBy?->name ?: '--' }}</td>
                                 <td class="text-end">{{ money($payment->amount) }}</td>
                             </tr>
                         @empty

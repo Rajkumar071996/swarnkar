@@ -67,7 +67,7 @@
     @endisset
 </div>
 
-<div class="mt-4 d-flex gap-2">
+<div class="mt-4 d-flex flex-column flex-sm-row gap-2 gs-form-actions">
     <button type="submit" class="btn btn-primary">{{ $submitLabel }}</button>
     <a href="{{ route('staff.index') }}" class="btn btn-outline-secondary">Cancel</a>
 </div>

@@ -30,7 +30,7 @@
         </div>
 
         <div class="row g-2 mb-3">
-            <div class="col-6">
+            <div class="col-12 col-sm-6">
                 <label for="city" class="form-label">City</label>
                 <input type="text" id="city" name="city" value="{{ old('city') }}"
                        class="form-control @error('city') is-invalid @enderror" required>
@@ -38,7 +38,7 @@
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
-            <div class="col-6">
+            <div class="col-12 col-sm-6">
                 <label for="state" class="form-label">State</label>
                 <input type="text" id="state" name="state" value="{{ old('state') }}"
                        class="form-control @error('state') is-invalid @enderror" required>
@@ -76,7 +76,7 @@
         </div>
 
         <div class="row g-2 mb-4">
-            <div class="col-6">
+            <div class="col-12 col-sm-6">
                 <label for="cash_in_hand" class="form-label">Cash in hand</label>
                 <div class="input-group">
                     <span class="input-group-text">₹</span>
@@ -88,7 +88,7 @@
                     @enderror
                 </div>
             </div>
-            <div class="col-6">
+            <div class="col-12 col-sm-6">
                 <label for="bank_balance" class="form-label">Bank</label>
                 <div class="input-group">
                     <span class="input-group-text">₹</span>

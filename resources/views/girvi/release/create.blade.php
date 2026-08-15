@@ -29,7 +29,9 @@
                 <table class="table table-sm align-middle mb-0">
                     <thead class="table-light">
                     <tr>
-                        <th>Receipt</th><th>Customer</th><th>Deposited</th><th>Due</th>
+                        <th>Receipt</th><th>Customer</th>
+                        <th class="d-none d-md-table-cell">Deposited</th>
+                        <th>Due</th>
                         <th class="text-end">Loan</th><th></th>
                     </tr>
                     </thead>
@@ -38,7 +40,7 @@
                         <tr>
                             <td class="font-monospace small">{{ $row->receipt_no }}</td>
                             <td class="fw-semibold">{{ $row->customer->full_name }}</td>
-                            <td class="small">{{ $row->disbursed_on->format('d M y') }}</td>
+                            <td class="small d-none d-md-table-cell">{{ $row->disbursed_on->format('d M y') }}</td>
                             <td class="small {{ $row->daysOverdue() > 0 ? 'text-danger' : '' }}">
                                 {{ $row->due_on->format('d M y') }}
                             </td>

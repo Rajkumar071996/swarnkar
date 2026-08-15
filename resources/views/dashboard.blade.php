@@ -25,11 +25,11 @@
             <div class="col-6 col-md-4 col-xl-2">
                 <div class="card gs-stat-card h-100">
                     <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
+                        <div class="d-flex justify-content-between align-items-start gap-1">
                             <div class="text-muted text-uppercase small">{{ $card['label'] }}</div>
-                            <i class="bi bi-{{ $card['icon'] }} text-muted"></i>
+                            <i class="bi bi-{{ $card['icon'] }} text-muted flex-shrink-0"></i>
                         </div>
-                        <div class="h4 mb-0 mt-2 {{ $card['tone'] }}">{{ $card['value'] }}</div>
+                        <div class="h4 gs-stat-value mb-0 mt-2 {{ $card['tone'] }}">{{ $card['value'] }}</div>
                         @if ($card['hint'])
                             <div class="small text-muted mt-1">{{ $card['hint'] }}</div>
                         @endif
@@ -49,7 +49,7 @@
                 <div class="table-responsive">
                     <table class="table table-sm align-middle mb-0">
                         <thead class="table-light">
-                        <tr><th>Customer</th><th>Item</th><th>Due</th><th class="text-end">Outstanding</th><th></th></tr>
+                        <tr><th>Customer</th><th class="d-none d-md-table-cell">Item</th><th>Due</th><th class="text-end">Outstanding</th><th></th></tr>
                         </thead>
                         <tbody>
                         @forelse ($dueSoon as $udhaar)
@@ -59,7 +59,7 @@
                                         {{ $udhaar->customer->full_name }}
                                     </a>
                                 </td>
-                                <td class="small">{{ Str::limit($udhaar->item_description, 24) }}</td>
+                                <td class="small d-none d-md-table-cell">{{ Str::limit($udhaar->item_description, 24) }}</td>
                                 <td>{{ $udhaar->due_on->format('d M') }}</td>
                                 <td class="text-end">{{ money($udhaar->outstandingAmount()) }}</td>
                                 <td class="text-end">
@@ -83,7 +83,7 @@
                 <div class="table-responsive">
                     <table class="table table-sm align-middle mb-0">
                         <thead class="table-light">
-                        <tr><th>Customer</th><th>Item</th><th>Late by</th><th class="text-end">Outstanding</th></tr>
+                        <tr><th>Customer</th><th class="d-none d-md-table-cell">Item</th><th>Late by</th><th class="text-end">Outstanding</th></tr>
                         </thead>
                         <tbody>
                         @forelse ($overdueUdhaars as $udhaar)
@@ -91,7 +91,7 @@
                                 <td class="fw-semibold">
                                     <a href="{{ route('khata.show', $udhaar->customer) }}">{{ $udhaar->customer->full_name }}</a>
                                 </td>
-                                <td class="small">{{ Str::limit($udhaar->item_description, 28) }}</td>
+                                <td class="small d-none d-md-table-cell">{{ Str::limit($udhaar->item_description, 28) }}</td>
                                 <td class="text-danger">{{ $udhaar->daysOverdue() }} days</td>
                                 <td class="text-end">{{ money($udhaar->outstandingAmount()) }}</td>
                             </tr>

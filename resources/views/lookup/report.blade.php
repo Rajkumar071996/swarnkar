@@ -148,7 +148,7 @@
                 <div class="table-responsive">
                     <table class="table table-sm mb-0 align-middle">
                         <thead class="table-light">
-                        <tr><th>Jeweller</th><th class="text-end">Outstanding</th><th class="text-end">Of which overdue</th></tr>
+                        <tr><th>Jeweller</th><th class="text-end">Outstanding</th><th class="text-end d-none d-md-table-cell">Of which overdue</th></tr>
                         </thead>
                         <tbody>
                         @forelse ($exposure->stores as $row)
@@ -163,7 +163,7 @@
                                     @endif
                                 </td>
                                 <td class="text-end fw-semibold">{{ money($row['outstanding']) }}</td>
-                                <td class="text-end {{ $row['overdue'] > 0 ? 'text-danger' : 'text-muted' }}">
+                                <td class="text-end d-none d-md-table-cell {{ $row['overdue'] > 0 ? 'text-danger' : 'text-muted' }}">
                                     {{ $row['overdue'] > 0 ? money($row['overdue']) : '--' }}
                                 </td>
                             </tr>
@@ -186,13 +186,13 @@
                 <div class="table-responsive">
                     <table class="table table-sm mb-0 align-middle">
                         <thead class="table-light">
-                        <tr><th>Issued</th><th>Where</th><th class="text-end">Outstanding</th><th>Status</th></tr>
+                        <tr><th>Issued</th><th class="d-none d-sm-table-cell">Where</th><th class="text-end">Outstanding</th><th>Status</th></tr>
                         </thead>
                         <tbody>
                         @forelse ($activity['udhaars'] as $row)
                             <tr>
                                 <td>{{ $row['issued_on']->format('M Y') }}</td>
-                                <td class="small text-muted">{{ $row['source'] }}</td>
+                                <td class="small text-muted d-none d-sm-table-cell">{{ $row['source'] }}</td>
                                 <td class="text-end">{{ money($row['outstanding']) }}</td>
                                 <td><span class="badge {{ $row['status']->badgeClass() }}">{{ $row['status']->label() }}</span></td>
                             </tr>
@@ -214,14 +214,14 @@
             <div class="table-responsive">
                 <table class="table table-sm mb-0 align-middle">
                     <thead class="table-light">
-                    <tr><th>When</th><th>Reason</th><th>Reported by</th><th class="text-end">Amount</th></tr>
+                    <tr><th>When</th><th>Reason</th><th class="d-none d-md-table-cell">Reported by</th><th class="text-end">Amount</th></tr>
                     </thead>
                     <tbody>
                     @foreach ($activity['flags'] as $flag)
                         <tr>
                             <td>{{ $flag['occurred_on']->format('d M Y') }}</td>
                             <td>{{ $flag['reason']->label() }}</td>
-                            <td class="small text-muted">{{ $flag['source'] }}</td>
+                            <td class="small text-muted d-none d-md-table-cell">{{ $flag['source'] }}</td>
                             <td class="text-end">{{ money($flag['amount']) }}</td>
                         </tr>
                     @endforeach

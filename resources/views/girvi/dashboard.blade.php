@@ -29,11 +29,11 @@
             <div class="col-6 col-md-4 col-xl-2">
                 <div class="card gs-stat-card h-100">
                     <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
+                        <div class="d-flex justify-content-between align-items-start gap-1">
                             <div class="text-muted text-uppercase small">{{ $card['label'] }}</div>
-                            <i class="bi bi-{{ $card['icon'] }} text-muted"></i>
+                            <i class="bi bi-{{ $card['icon'] }} text-muted flex-shrink-0"></i>
                         </div>
-                        <div class="h4 mb-0 mt-2 {{ $card['tone'] }}">{{ $card['value'] }}</div>
+                        <div class="h4 gs-stat-value mb-0 mt-2 {{ $card['tone'] }}">{{ $card['value'] }}</div>
                         @if ($card['hint'])
                             <div class="small text-muted mt-1">{{ $card['hint'] }}</div>
                         @endif

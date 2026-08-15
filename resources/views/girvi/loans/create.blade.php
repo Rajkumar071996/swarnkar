@@ -76,7 +76,7 @@
                                        class="form-control @error('disbursed_on') is-invalid @enderror" required>
                                 @error('disbursed_on') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
-                            <div class="col-3">
+                            <div class="col-6 col-md-3">
                                 <label for="duration_months" class="form-label">Duration</label>
                                 <div class="input-group">
                                     <input type="number" id="duration_months" name="duration_months" min="1" max="120"
@@ -86,7 +86,7 @@
                                 </div>
                                 @error('duration_months') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
-                            <div class="col-3">
+                            <div class="col-6 col-md-3">
                                 <label class="form-label">Maturity</label>
                                 <input type="text" class="form-control" id="maturityOn" disabled>
                             </div>
@@ -243,7 +243,7 @@
                     </div>
                 </div>
 
-                <div class="mt-4 d-flex gap-2">
+                <div class="mt-4 d-flex flex-column flex-sm-row gap-2 gs-form-actions">
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-safe me-1"></i>Save girvi
                     </button>

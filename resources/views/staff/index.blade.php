@@ -18,9 +18,9 @@
                 <tr>
                     <th>Name</th>
                     <th>Mobile</th>
-                    <th>Email</th>
+                    <th class="d-none d-md-table-cell">Email</th>
                     <th>Role</th>
-                    <th>Status</th>
+                    <th class="d-none d-sm-table-cell">Status</th>
                     <th class="text-end">Actions</th>
                 </tr>
                 </thead>
@@ -29,26 +29,28 @@
                     <tr>
                         <td class="fw-semibold">{{ $member->name }}</td>
                         <td class="font-monospace">{{ $member->phone }}</td>
-                        <td>{{ $member->email ?: '--' }}</td>
+                        <td class="d-none d-md-table-cell">{{ $member->email ?: '--' }}</td>
                         <td>{{ $member->role->label() }}</td>
-                        <td>
+                        <td class="d-none d-sm-table-cell">
                             <span class="badge {{ $member->is_active ? 'bg-success' : 'bg-secondary' }}">
                                 {{ $member->is_active ? 'Active' : 'Disabled' }}
                             </span>
                         </td>
                         <td class="text-end">
-                            <a href="{{ route('staff.edit', $member) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
-                            @can('delete', $member)
-                                @if ($member->is_active)
-                                    <form method="POST" action="{{ route('staff.destroy', $member) }}" class="d-inline">
-                                        @csrf @method('DELETE')
-                                        <button class="btn btn-sm btn-outline-danger"
-                                                onclick="return confirm('Deactivate {{ $member->name }}?')">
-                                            Deactivate
-                                        </button>
-                                    </form>
-                                @endif
-                            @endcan
+                            <div class="gs-row-actions d-inline-flex flex-column flex-sm-row justify-content-sm-end gap-1">
+                                <a href="{{ route('staff.edit', $member) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                @can('delete', $member)
+                                    @if ($member->is_active)
+                                        <form method="POST" action="{{ route('staff.destroy', $member) }}">
+                                            @csrf @method('DELETE')
+                                            <button class="btn btn-sm btn-outline-danger"
+                                                    onclick="return confirm('Deactivate {{ $member->name }}?')">
+                                                Deactivate
+                                            </button>
+                                        </form>
+                                    @endif
+                                @endcan
+                            </div>
                         </td>
                     </tr>
                 @empty

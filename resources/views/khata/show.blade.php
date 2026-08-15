@@ -110,12 +110,12 @@
             </div>
         </div>
     @else
-        <div class="alert alert-light border d-flex justify-content-between align-items-center">
+        <div class="alert alert-light border d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
             <div class="small text-muted mb-0">
                 This page shows your own book only. Run a consented credit check to see whether this
                 customer owes anything at other jewellers.
             </div>
-            <a href="{{ route('lookup.report', $customer) }}" class="btn btn-sm btn-outline-primary ms-3 text-nowrap">
+            <a href="{{ route('lookup.report', $customer) }}" class="btn btn-sm btn-outline-primary">
                 Check network
             </a>
         </div>
@@ -130,11 +130,11 @@
                         <thead class="table-light">
                         <tr>
                             <th>Item</th>
-                            <th>Issued</th>
+                            <th class="d-none d-md-table-cell">Issued</th>
                             <th>Due</th>
-                            <th class="text-end">Amount</th>
+                            <th class="text-end d-none d-lg-table-cell">Amount</th>
                             <th class="text-end">Outstanding</th>
-                            <th>Status</th>
+                            <th class="d-none d-md-table-cell">Status</th>
                             <th></th>
                         </tr>
                         </thead>
@@ -142,16 +142,16 @@
                         @forelse ($entries as $entry)
                             <tr>
                                 <td>{{ Str::limit($entry->item_description, 26) }}</td>
-                                <td class="small">{{ $entry->issued_on->format('d M y') }}</td>
+                                <td class="small d-none d-md-table-cell">{{ $entry->issued_on->format('d M y') }}</td>
                                 <td class="small">
                                     {{ $entry->due_on->format('d M y') }}
                                     @if ($entry->status->isOutstanding() && $entry->daysOverdue() > 0)
                                         <div class="text-danger">{{ $entry->daysOverdue() }}d late</div>
                                     @endif
                                 </td>
-                                <td class="text-end">{{ money($entry->principal_amount) }}</td>
+                                <td class="text-end d-none d-lg-table-cell">{{ money($entry->principal_amount) }}</td>
                                 <td class="text-end fw-semibold">{{ money($entry->outstandingAmount()) }}</td>
-                                <td>
+                                <td class="d-none d-md-table-cell">
                                     <span class="badge {{ $entry->status->badgeClass() }}">
                                         {{ $entry->status->label() }}
                                     </span>
@@ -180,14 +180,14 @@
                 <div class="table-responsive">
                     <table class="table table-sm align-middle mb-0">
                         <thead class="table-light">
-                        <tr><th>Date</th><th>Against</th><th>Method</th><th class="text-end">Amount</th></tr>
+                        <tr><th>Date</th><th class="d-none d-md-table-cell">Against</th><th class="d-none d-sm-table-cell">Method</th><th class="text-end">Amount</th></tr>
                         </thead>
                         <tbody>
                         @forelse ($history as $row)
                             <tr>
                                 <td class="small">{{ $row['paid_on']->format('d M y') }}</td>
-                                <td class="small text-muted">{{ $row['against'] }}</td>
-                                <td class="small">{{ Str::headline($row['method']) }}</td>
+                                <td class="small text-muted d-none d-md-table-cell">{{ $row['against'] }}</td>
+                                <td class="small d-none d-sm-table-cell">{{ Str::headline($row['method']) }}</td>
                                 <td class="text-end text-success">{{ money($row['amount']) }}</td>
                             </tr>
                         @empty

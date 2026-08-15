@@ -14,7 +14,7 @@
 
 @section('content')
     <div class="row g-3 mb-3">
-        <div class="col-md-6">
+        <div class="col-6 col-md-6">
             <div class="card gs-stat-card">
                 <div class="card-body">
                     <div class="text-muted text-uppercase small">Total outstanding</div>
@@ -22,7 +22,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-6 col-md-6">
             <div class="card gs-stat-card">
                 <div class="card-body">
                     <div class="text-muted text-uppercase small">Past due date</div>
@@ -47,11 +47,11 @@
                 <thead class="table-light">
                 <tr>
                     <th>Customer</th>
-                    <th>Item</th>
+                    <th class="d-none d-md-table-cell">Item</th>
                     <th>Due</th>
-                    <th class="text-end">Principal</th>
+                    <th class="text-end d-none d-lg-table-cell">Principal</th>
                     <th class="text-end">Outstanding</th>
-                    <th>Status</th>
+                    <th class="d-none d-md-table-cell">Status</th>
                     <th></th>
                 </tr>
                 </thead>
@@ -59,16 +59,16 @@
                 @forelse ($udhaars as $udhaar)
                     <tr>
                         <td class="fw-semibold">{{ $udhaar->customer->full_name }}</td>
-                        <td>{{ $udhaar->item_description }}</td>
+                        <td class="d-none d-md-table-cell">{{ $udhaar->item_description }}</td>
                         <td>
                             {{ $udhaar->due_on->format('d M Y') }}
                             @if ($udhaar->status->isOutstanding() && $udhaar->due_on->isPast())
                                 <div class="small text-danger">{{ $udhaar->daysOverdue() }} days late</div>
                             @endif
                         </td>
-                        <td class="text-end">{{ money($udhaar->principal_amount) }}</td>
+                        <td class="text-end d-none d-lg-table-cell">{{ money($udhaar->principal_amount) }}</td>
                         <td class="text-end fw-semibold">{{ money($udhaar->outstandingAmount()) }}</td>
-                        <td><span class="badge {{ $udhaar->status->badgeClass() }}">{{ $udhaar->status->label() }}</span></td>
+                        <td class="d-none d-md-table-cell"><span class="badge {{ $udhaar->status->badgeClass() }}">{{ $udhaar->status->label() }}</span></td>
                         <td class="text-end">
                             <a href="{{ route('udhaars.show', $udhaar) }}" class="btn btn-sm btn-outline-secondary">Open</a>
                         </td>

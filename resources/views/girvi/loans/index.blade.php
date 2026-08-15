@@ -38,12 +38,12 @@
                 <tr>
                     <th>Receipt</th>
                     <th>Customer</th>
-                    <th>Deposited</th>
+                    <th class="d-none d-lg-table-cell">Deposited</th>
                     <th>Due</th>
-                    <th class="text-end">Fine Wt</th>
-                    <th class="text-end">Loan</th>
+                    <th class="text-end d-none d-lg-table-cell">Fine Wt</th>
+                    <th class="text-end d-none d-md-table-cell">Loan</th>
                     <th class="text-end">Outstanding</th>
-                    <th>Status</th>
+                    <th class="d-none d-md-table-cell">Status</th>
                     <th></th>
                 </tr>
                 </thead>
@@ -54,14 +54,14 @@
                             <a href="{{ route('girvi.loans.show', $loan) }}">{{ $loan->receipt_no }}</a>
                         </td>
                         <td class="fw-semibold">{{ $loan->customer->full_name }}</td>
-                        <td class="small">{{ $loan->disbursed_on->format('d M y') }}</td>
+                        <td class="small d-none d-lg-table-cell">{{ $loan->disbursed_on->format('d M y') }}</td>
                         <td class="small {{ ! $loan->isReleased() && $loan->daysOverdue() > 0 ? 'text-danger' : '' }}">
                             {{ $loan->due_on->format('d M y') }}
                         </td>
-                        <td class="text-end small">{{ number_format((float) $loan->fine_weight_grams, 3) }}</td>
-                        <td class="text-end">{{ money($loan->principal_amount) }}</td>
+                        <td class="text-end small d-none d-lg-table-cell">{{ number_format((float) $loan->fine_weight_grams, 3) }}</td>
+                        <td class="text-end d-none d-md-table-cell">{{ money($loan->principal_amount) }}</td>
                         <td class="text-end">{{ money($loan->outstandingPrincipal()) }}</td>
-                        <td>
+                        <td class="d-none d-md-table-cell">
                             @if ($loan->isReleased())
                                 <span class="badge bg-success">Released</span>
                             @elseif ($loan->daysOverdue() > 0)
@@ -72,7 +72,8 @@
                         </td>
                         <td class="text-end">
                             <a href="{{ route('girvi.loans.receipt', $loan) }}" class="btn btn-sm btn-primary">
-                                <i class="bi bi-printer me-1"></i>Receipt
+                                <i class="bi bi-printer"></i>
+                                <span class="d-none d-sm-inline ms-1">Receipt</span>
                             </a>
                         </td>
                     </tr>
