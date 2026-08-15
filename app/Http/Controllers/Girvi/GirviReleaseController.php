@@ -93,7 +93,7 @@ class GirviReleaseController extends Controller
     {
         $this->authorize('view', $goldLoan);
 
-        $goldLoan->load(['customer', 'items', 'payments']);
+        $goldLoan->load(['customer', 'items', 'payments', 'store']);
 
         return view('girvi.release.receipt', [
             'loan' => $goldLoan,

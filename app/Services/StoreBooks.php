@@ -17,20 +17,25 @@ use Illuminate\Validation\ValidationException;
 class StoreBooks
 {
     /**
-     * @return array{capital: float, cash: float, bank: float, income: float, expenses: float}
+     * @return array{capital: float, cash: float, bank: float, income: float, expenses: float, profit: float}
      */
     public function snapshot(Store $store): array
     {
+        $income = round((float) StoreIncome::query()
+            ->where('store_id', $store->id)
+            ->where('kind', 'income')
+            ->sum('amount'), 2);
+        $expenses = round((float) StoreExpense::query()
+            ->where('store_id', $store->id)
+            ->sum('amount'), 2);
+
         return [
             'capital' => round((float) $store->opening_capital, 2),
             'cash' => round((float) $store->cash_in_hand, 2),
             'bank' => round((float) $store->bank_balance, 2),
-            'income' => round((float) StoreIncome::query()
-                ->where('store_id', $store->id)
-                ->sum('amount'), 2),
-            'expenses' => round((float) StoreExpense::query()
-                ->where('store_id', $store->id)
-                ->sum('amount'), 2),
+            'income' => $income,
+            'expenses' => $expenses,
+            'profit' => round($income - $expenses, 2),
         ];
     }
 

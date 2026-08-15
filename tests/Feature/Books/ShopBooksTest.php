@@ -34,6 +34,7 @@ class ShopBooksTest extends TestCase
             ->assertSee(money(1000000), false)
             ->assertSee('Income')
             ->assertSee('Expenses')
+            ->assertSee('Profit')
             ->assertSee(money(0), false);
 
         $this->actingAs($user)
@@ -269,6 +270,58 @@ class ShopBooksTest extends TestCase
             ->assertOk()
             ->assertSee('Partner investment')
             ->assertSee('Investment');
+    }
+
+    #[Test]
+    public function profit_is_income_minus_expenses_and_ignores_investment(): void
+    {
+        $user = User::factory()->owner()->create();
+
+        $this->actingAs($user)->post(route('books.incomes.store'), [
+            'income_amount' => 40000,
+            'received_in' => 'cash',
+            'kind' => 'income',
+            'received_on' => now()->toDateString(),
+            'income_narration' => 'Old gold sale',
+        ]);
+
+        $this->actingAs($user)->post(route('books.incomes.store'), [
+            'income_amount' => 200000,
+            'received_in' => 'bank',
+            'kind' => 'investment',
+            'received_on' => now()->toDateString(),
+            'income_narration' => 'Partner investment',
+        ]);
+
+        $this->actingAs($user)->post(route('books.expenses.store'), [
+            'amount' => 15000,
+            'paid_from' => 'cash',
+            'paid_on' => now()->toDateString(),
+            'narration' => 'Shop rent',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Profit')
+            ->assertSee(money(25000), false)
+            ->assertSee(money(40000), false)
+            ->assertSee(money(15000), false)
+            ->assertDontSee('Loss');
+
+        $this->actingAs($user)->post(route('books.expenses.store'), [
+            'amount' => 50000,
+            'paid_from' => 'bank',
+            'paid_on' => now()->toDateString(),
+            'narration' => 'Stock purchase',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('girvi.dashboard'))
+            ->assertOk()
+            ->assertSee('Loss')
+            ->assertSee(money(25000), false)
+            ->assertDontSee('>Profit<', false);
     }
 
     #[Test]

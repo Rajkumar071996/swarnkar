@@ -181,6 +181,11 @@ class GirviReleaseTest extends TestCase
             ->get(route('girvi.release.receipt', $this->loan))
             ->assertOk()
             ->assertSee('Release Receipt')
+            ->assertSee('Customer Copy')
+            ->assertSee('Shop Copy')
+            ->assertSee('Print Receipt')
+            ->assertSee('jewellery returned in full')
+            ->assertSee($this->loan->receipt_no)
             ->assertSee($this->loan->payments()->where('type', 'principal')->value('receipt_no'));
     }
 
