@@ -8,6 +8,13 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    experimental: {
+        renderBuiltUrl(filename, { hostType }) {
+            if (hostType === 'css') {
+                return { relative: true };
+            }
+        },
+    },
     server: {
         watch: {
             ignored: ['**/storage/framework/views/**'],
