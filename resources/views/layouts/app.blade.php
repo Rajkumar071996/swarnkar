@@ -20,16 +20,13 @@
     $moduleHome = $isGirvi ? route('girvi.dashboard') : route('dashboard');
 @endphp
 
-{{-- Mobile top bar --}}
+{{-- Mobile nav: CSS checkbox so it works even if JS does not load --}}
+<input type="checkbox" id="gsNavToggle" class="gs-nav-checkbox d-lg-none" autocomplete="off">
+
 <header class="gs-topbar d-lg-none">
-    <button class="btn btn-link text-white p-0 border-0"
-            type="button"
-            data-bs-toggle="offcanvas"
-            data-bs-target="#gsMobileNav"
-            aria-controls="gsMobileNav"
-            aria-label="Open menu">
+    <label for="gsNavToggle" class="gs-nav-button" aria-label="Open menu" role="button">
         <i class="bi bi-list fs-3"></i>
-    </button>
+    </label>
 
     <a href="{{ $moduleHome }}" class="text-white text-decoration-none fw-semibold">
         <i class="bi bi-{{ $moduleIcon }} gs-brand-mark me-1"></i>{{ $moduleName }}
@@ -40,15 +37,14 @@
     </span>
 </header>
 
-{{-- Mobile offcanvas menu --}}
-<div class="offcanvas offcanvas-start gs-offcanvas d-lg-none" tabindex="-1" id="gsMobileNav"
-     aria-labelledby="gsMobileNavLabel">
+<label for="gsNavToggle" class="gs-drawer-backdrop d-lg-none" aria-hidden="true"></label>
+
+<nav class="gs-offcanvas d-lg-none" id="gsMobileNav" aria-labelledby="gsMobileNavLabel">
     <div class="offcanvas-header border-bottom border-secondary">
         <h2 class="offcanvas-title h5 text-white mb-0" id="gsMobileNavLabel">
             <i class="bi bi-{{ $moduleIcon }} gs-brand-mark me-2"></i>{{ $moduleName }}
         </h2>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"
-                aria-label="Close"></button>
+        <label for="gsNavToggle" class="btn-close btn-close-white m-0" role="button" aria-label="Close"></label>
     </div>
     <div class="offcanvas-body d-flex flex-column p-3">
         @include('partials.nav-links', ['dismissOffcanvas' => true])
@@ -68,7 +64,7 @@
             </button>
         </form>
     </div>
-</div>
+</nav>
 
 <div class="container-fluid">
     <div class="row">

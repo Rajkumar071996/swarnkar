@@ -13,6 +13,21 @@
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
 
+<IfModule mod_mime.c>
+    AddType text/javascript .js .mjs
+</IfModule>
+
+<FilesMatch "(^\.env|composer\.(json|lock)|^artisan$)">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+
 <FilesMatch "(^\.env|composer\.(json|lock)|^artisan$)">
     <IfModule mod_authz_core.c>
         Require all denied

@@ -20,9 +20,12 @@ html {
 }
 
 body {
-    overflow-x: clip;
     min-height: 100vh;
     min-height: -webkit-fill-available;
+}
+
+body:has(#gsNavToggle:checked) {
+    overflow: hidden;
 }
 
 button,
@@ -84,7 +87,7 @@ a,
 .gs-topbar {
     position: sticky;
     top: 0;
-    z-index: 1030;
+    z-index: 1055;
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -102,12 +105,15 @@ a,
     overflow-wrap: break-word;
 }
 
-.gs-topbar .btn {
+.gs-nav-button {
     min-width: 2.75rem;
     min-height: 2.75rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    margin: 0;
+    color: #fff;
+    cursor: pointer;
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -115,10 +121,54 @@ a,
     color: #e9d5ff;
 }
 
+.gs-nav-checkbox {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.gs-drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1056;
+    background: rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
 .gs-offcanvas {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1060;
+    display: flex;
+    flex-direction: column;
     background: $gs-shell;
     color: #fff;
     width: min(20rem, 86vw);
+    max-width: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    transform: translateX(-110%);
+    transition: transform 0.2s ease;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+#gsNavToggle:checked ~ .gs-drawer-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#gsNavToggle:checked ~ .gs-offcanvas {
+    transform: none;
+    pointer-events: auto;
+    visibility: visible;
 }
 
 .gs-offcanvas .offcanvas-body {
@@ -126,6 +176,10 @@ a,
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+}
+
+.offcanvas:not(.show) {
+    pointer-events: none !important;
 }
 
 .gs-main {
