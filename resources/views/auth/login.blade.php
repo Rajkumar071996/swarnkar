@@ -22,17 +22,28 @@
 
 @section('content')
     <h2 class="h4 mb-1">Sign in</h2>
-    <p class="text-muted mb-4">Use the shop owner's mobile number.</p>
+    <p class="text-muted mb-4">Use the shop name and the owner's mobile number.</p>
 
     <form method="POST" action="{{ route('login.store') }}">
         @csrf
+
+        <div class="mb-3">
+            <label for="company_name" class="form-label">Company name</label>
+            <input type="text" id="company_name" name="company_name" value="{{ old('company_name') }}"
+                   class="form-control @error('company_name') is-invalid @enderror"
+                   autocomplete="organization"
+                   placeholder="Mahadev Jewellers" required autofocus>
+            @error('company_name')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
 
         <div class="mb-3">
             <label for="phone" class="form-label">Mobile number</label>
             <input type="tel" id="phone" name="phone" value="{{ old('phone') }}"
                    class="form-control @error('phone') is-invalid @enderror"
                    inputmode="numeric" autocomplete="username"
-                   placeholder="10-digit mobile" required autofocus>
+                   placeholder="10-digit mobile" required>
             @error('phone')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror

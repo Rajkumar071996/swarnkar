@@ -39,6 +39,8 @@ class GirviDepositTest extends TestCase
             ->assertOk()
             ->assertSee('Item detail')
             ->assertSee('Estimate in %')
+            ->assertSee('Cash in hand')
+            ->assertSee('Bank')
             ->assertSee($this->customer->full_name);
     }
 
@@ -81,6 +83,7 @@ class GirviDepositTest extends TestCase
         $this->assertSame('54960.00', $loan->total_value);
         $this->assertSame('41220.00', $loan->estimate_amount);
         $this->assertSame('40000.00', $loan->principal_amount);
+        $this->assertSame('cash', $loan->paid_from);
         $this->assertSame('60.00', $loan->interest_rate);
         $this->assertSame(5.0, $loan->monthlyInterestRate());
         $this->assertMatchesRegularExpression('/^GRT-19\/27-\d{3,4}$/', $loan->receipt_no);
@@ -94,6 +97,28 @@ class GirviDepositTest extends TestCase
         $this->assertSame('600000.00', $this->user->store->girvi_bank_balance);
         $this->assertSame('1000000.00', $this->user->store->opening_capital);
         $this->assertSame('1000000.00', $this->user->store->girvi_opening_capital);
+    }
+
+    #[Test]
+    public function a_bank_disbursement_comes_out_of_the_girvi_bank(): void
+    {
+        $this->actingAs($this->user)
+            ->post(route('girvi.loans.store'), $this->payload(['paid_from' => 'bank']))
+            ->assertRedirect();
+
+        $loan = GoldLoan::query()->firstOrFail();
+
+        $this->assertSame('bank', $loan->paid_from);
+
+        $this->user->store->refresh();
+        $this->assertSame('400000.00', $this->user->store->girvi_cash_in_hand);
+        $this->assertSame('560000.00', $this->user->store->girvi_bank_balance);
+
+        $this->actingAs($this->user)
+            ->get(route('girvi.loans.show', $loan))
+            ->assertOk()
+            ->assertSee('Paid from')
+            ->assertSee('Bank');
     }
 
     #[Test]
@@ -289,6 +314,7 @@ class GirviDepositTest extends TestCase
             'estimate_percent' => 75,
             'interest_rate' => 5,
             'principal_amount' => 40000,
+            'paid_from' => 'cash',
             'items' => [
                 [
                     'metal_type' => 'gold',

@@ -45,6 +45,7 @@ class GirviLedger
         $estimatePercent = (float) ($attributes['estimate_percent'] ?? config('girvi.estimate_percent'));
         $estimateAmount = $this->valuation->estimateAmount($priced['total_value'], $estimatePercent);
         $principal = round((float) $attributes['principal_amount'], 2);
+        $paidFrom = ($attributes['paid_from'] ?? 'cash') === 'bank' ? 'bank' : 'cash';
 
         if ($principal > $estimateAmount + 0.009) {
             throw ValidationException::withMessages([
@@ -61,7 +62,7 @@ class GirviLedger
 
         return DB::transaction(function () use (
             $attributes, $priced, $estimatePercent, $estimateAmount,
-            $principal, $disbursedOn, $durationMonths, $heaviest, $user
+            $principal, $paidFrom, $disbursedOn, $durationMonths, $heaviest, $user
         ) {
             $loan = GoldLoan::create([
                 'store_id' => $user->store_id,
@@ -72,6 +73,7 @@ class GirviLedger
                 'packet_no' => $attributes['packet_no'] ?? null,
                 'barcode' => $attributes['barcode'] ?? null,
                 'principal_amount' => $principal,
+                'paid_from' => $paidFrom,
                 'interest_rate' => $attributes['interest_rate'] ?? config('girvi.interest_rate'),
                 'duration_months' => $durationMonths,
                 'gross_weight_grams' => $priced['gross_weight_grams'],
@@ -97,7 +99,7 @@ class GirviLedger
 
             $loan->items()->createMany($priced['items']);
 
-            $this->books->debit($user->store, 'cash', $principal, 'principal_amount', StoreBooks::GIRVI);
+            $this->books->debit($user->store, $paidFrom, $principal, 'principal_amount', StoreBooks::GIRVI);
 
             AuditLog::record('girvi.deposited', $loan, [
                 'customer_id' => $loan->customer_id,

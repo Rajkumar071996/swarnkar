@@ -78,6 +78,7 @@ class GirviLoanController extends Controller
             'estimate_percent' => ['required', 'numeric', 'min:1', 'max:100'],
             'interest_rate' => ['required', 'numeric', 'min:0', 'max:30'],
             'principal_amount' => ['required', 'numeric', 'min:1', 'max:99999999'],
+            'paid_from' => ['required', 'in:cash,bank'],
             'refer_by' => ['nullable', 'string', 'max:128'],
             'narration' => ['nullable', 'string', 'max:1000'],
             'items' => ['required', 'array', 'min:1'],

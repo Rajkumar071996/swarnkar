@@ -19,7 +19,10 @@ class RegisterTest extends TestCase
         $this->get(route('login'))
             ->assertOk()
             ->assertSee(route('register'), false)
-            ->assertSee('Create a store account');
+            ->assertSee('Create a store account')
+            ->assertSee('Company name')
+            ->assertSee('Mahadev Jewellers')
+            ->assertSee('Mobile number');
     }
 
     #[Test]
@@ -154,5 +157,41 @@ class RegisterTest extends TestCase
         $this->actingAs($user)
             ->get(route('register'))
             ->assertRedirect(route('dashboard'));
+    }
+
+    #[Test]
+    public function sign_in_requires_the_shop_name_and_mobile(): void
+    {
+        $store = Store::factory()->create(['name' => 'Mahadev Jewellers']);
+        $user = User::factory()->owner()->create([
+            'store_id' => $store->id,
+            'phone' => '9829012345',
+        ]);
+
+        $this->post(route('login.store'), [
+            'company_name' => 'mahadev  jewellers',
+            'phone' => '9829012345',
+            'password' => 'password',
+        ])->assertRedirect(route('dashboard'));
+
+        $this->assertAuthenticatedAs($user);
+    }
+
+    #[Test]
+    public function sign_in_fails_when_the_company_name_does_not_match(): void
+    {
+        $store = Store::factory()->create(['name' => 'Mahadev Jewellers']);
+        User::factory()->owner()->create([
+            'store_id' => $store->id,
+            'phone' => '9829012345',
+        ]);
+
+        $this->post(route('login.store'), [
+            'company_name' => 'Laxmi Jewellers',
+            'phone' => '9829012345',
+            'password' => 'password',
+        ])->assertSessionHasErrors('phone');
+
+        $this->assertGuest();
     }
 }

@@ -130,6 +130,9 @@
                             <span class="text-muted">at {{ number_format((float) $loan->estimate_percent, 0) }}%</span>
                         </dd>
 
+                        <dt class="col-5">Paid from</dt>
+                        <dd class="col-7">{{ $loan->paidFromLabel() }}</dd>
+
                         <dt class="col-5">Loan type</dt>
                         <dd class="col-7">{{ $loan->loan_type ?: '--' }}</dd>
 

@@ -15,7 +15,7 @@ use Illuminate\Support\Carbon;
 
 #[Fillable([
     'store_id', 'customer_id', 'loan_no', 'invoice_no', 'receipt_no', 'packet_no', 'barcode',
-    'principal_amount', 'interest_rate', 'duration_months',
+    'principal_amount', 'paid_from', 'interest_rate', 'duration_months',
     'pledged_weight_grams', 'purity_karat',
     'gross_weight_grams', 'less_weight_grams', 'net_weight_grams', 'fine_weight_grams',
     'rate_per_gram', 'total_value', 'estimate_percent', 'estimate_amount',
@@ -100,6 +100,11 @@ class GoldLoan extends Model
     public function outstandingPrincipal(): float
     {
         return round((float) $this->principal_amount - (float) $this->principal_repaid, 2);
+    }
+
+    public function paidFromLabel(): string
+    {
+        return $this->paid_from === 'bank' ? 'Bank' : 'Cash in hand';
     }
 
     /**

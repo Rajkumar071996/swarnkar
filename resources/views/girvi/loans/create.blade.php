@@ -231,6 +231,15 @@
                         </div>
                         <div class="form-text" id="loanHint"></div>
                     </div>
+                    <div class="col-md-3">
+                        <label for="paid_from" class="form-label">Paid from</label>
+                        <select id="paid_from" name="paid_from"
+                                class="form-select @error('paid_from') is-invalid @enderror" required>
+                            <option value="cash" @selected(old('paid_from', 'cash') === 'cash')>Cash in hand</option>
+                            <option value="bank" @selected(old('paid_from') === 'bank')>Bank</option>
+                        </select>
+                        @error('paid_from') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
 
                     <div class="col-md-4">
                         <label for="refer_by" class="form-label">Refer By</label>

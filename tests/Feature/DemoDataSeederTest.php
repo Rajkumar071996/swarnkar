@@ -41,8 +41,13 @@ class DemoDataSeederTest extends TestCase
     public function the_demo_sign_in_accounts_work(): void
     {
         foreach (['9829011223', '9829044556', '9829077889'] as $phone) {
-            $this->post(route('login.store'), ['phone' => $phone, 'password' => 'password'])
-                ->assertRedirect(route('dashboard'));
+            $user = User::where('phone', $phone)->first();
+
+            $this->post(route('login.store'), [
+                'company_name' => $user->store->name,
+                'phone' => $phone,
+                'password' => 'password',
+            ])->assertRedirect(route('dashboard'));
 
             $this->post(route('logout'));
         }

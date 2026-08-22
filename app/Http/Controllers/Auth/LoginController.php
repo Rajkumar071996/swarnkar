@@ -27,15 +27,24 @@ class LoginController extends Controller
         ]);
 
         $credentials = $request->validate([
+            'company_name' => ['required', 'string', 'max:120'],
             'phone' => MobileNumber::rules(),
             'password' => ['required', 'string'],
         ], [
             'phone.regex' => 'Enter a valid 10-digit Indian mobile number.',
         ]);
 
-        $user = User::where('phone', $credentials['phone'])->first();
+        $user = User::query()
+            ->with('store')
+            ->where('phone', $credentials['phone'])
+            ->first();
 
-        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
+        $companyMatches = $user && $this->sameCompanyName(
+            $user->store?->name,
+            $credentials['company_name'],
+        );
+
+        if (! $user || ! $companyMatches || ! Hash::check($credentials['password'], $user->password)) {
             throw ValidationException::withMessages([
                 'phone' => 'Those credentials do not match our records.',
             ]);
@@ -63,5 +72,16 @@ class LoginController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
+    }
+
+    private function sameCompanyName(?string $stored, string $typed): bool
+    {
+        return $this->normaliseCompanyName($stored) === $this->normaliseCompanyName($typed)
+            && $this->normaliseCompanyName($typed) !== '';
+    }
+
+    private function normaliseCompanyName(?string $name): string
+    {
+        return mb_strtolower(preg_replace('/\s+/', ' ', trim((string) $name)));
     }
 }
